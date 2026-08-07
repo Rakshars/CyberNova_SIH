@@ -1,7 +1,8 @@
-import { useState } from 'react'
-import { Outlet, NavLink, useLocation } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import CopilotDrawer from './CopilotDrawer'
 import CyberLoadingScreen from './CyberLoadingScreen'
+import { User, LogIn, LogOut, UserPlus } from 'lucide-react'
 
 const NAV = [
   {
@@ -77,8 +78,37 @@ const PAGE_TITLES = {
 
 export default function SocLayout() {
   const location = useLocation()
+  const navigate = useNavigate()
   const [copilotOpen, setCopilotOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const [currentUser, setCurrentUser] = useState(null)
+
+  useEffect(() => {
+    loadSavedUser()
+    const handleAuthChange = () => loadSavedUser()
+    window.addEventListener('cybernova_auth_change', handleAuthChange)
+    return () => window.removeEventListener('cybernova_auth_change', handleAuthChange)
+  }, [])
+
+  const loadSavedUser = () => {
+    const raw = localStorage.getItem('cybernova_user')
+    if (raw) {
+      try {
+        setCurrentUser(JSON.parse(raw))
+      } catch (e) {
+        setCurrentUser(null)
+      }
+    } else {
+      setCurrentUser(null)
+    }
+  }
+
+  const handleLogout = () => {
+    localStorage.removeItem('cybernova_user')
+    setCurrentUser(null)
+    window.dispatchEvent(new Event('cybernova_auth_change'))
+    navigate('/login')
+  }
 
   const pageTitle = (() => {
     if (location.pathname.startsWith('/soc/incidents/')) return 'Incident Investigation'
@@ -118,12 +148,125 @@ export default function SocLayout() {
               {label}
             </NavLink>
           ))}
+
+          <div style={{ flex: 1 }} />
+
+          {/* User Auth & Logout Link in Sidebar Footer */}
+          {currentUser ? (
+            <button
+              onClick={handleLogout}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                padding: '10px 12px',
+                borderRadius: '10px',
+                background: 'rgba(255, 42, 109, 0.1)',
+                border: '1px solid rgba(255, 42, 109, 0.3)',
+                color: 'var(--critical)',
+                fontSize: '12px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                marginTop: '10px',
+                width: '100%',
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.background = 'rgba(255, 42, 109, 0.2)'
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.background = 'rgba(255, 42, 109, 0.1)'
+              }}
+            >
+              <LogOut size={15} />
+              Log Out ({currentUser.username})
+            </button>
+          ) : (
+            <NavLink
+              to="/login"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                padding: '10px 12px',
+                borderRadius: '10px',
+                background: 'rgba(255, 255, 255, 0.04)',
+                border: '1px solid var(--border-sub)',
+                color: 'var(--accent)',
+                fontSize: '12px',
+                fontWeight: 700,
+                textDecoration: 'none',
+                marginTop: '10px'
+              }}
+            >
+              <LogIn size={15} />
+              Log In / Register User
+            </NavLink>
+          )}
         </aside>
 
         <div className="main">
           <header className="topbar">
             <span className="topbar-title">{pageTitle}</span>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+              {/* Authenticated User Indicator Badge with Logout Button */}
+              {currentUser ? (
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    background: 'rgba(0, 242, 254, 0.1)',
+                    border: '1px solid rgba(0, 242, 254, 0.3)',
+                    padding: '4px 12px',
+                    borderRadius: '99px',
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    color: '#fff'
+                  }}
+                >
+                  <User size={14} color="var(--accent)" />
+                  <span>{currentUser.username}</span>
+                  <span style={{ color: 'var(--text-sub)', fontSize: '10px' }}>({currentUser.department || 'User'})</span>
+                  
+                  <button
+                    onClick={handleLogout}
+                    title="Log Out"
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      color: 'var(--text-sub)',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      marginLeft: '4px',
+                      padding: '2px'
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.color = 'var(--critical)'}
+                    onMouseLeave={e => e.currentTarget.style.color = 'var(--text-sub)'}
+                  >
+                    <LogOut size={13} />
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => navigate('/login')}
+                  style={{
+                    background: 'rgba(255,255,255,0.05)',
+                    border: '1px solid var(--border-sub)',
+                    color: 'var(--text-sub)',
+                    padding: '4px 10px',
+                    borderRadius: '99px',
+                    fontSize: '11px',
+                    fontWeight: 700,
+                    cursor: 'pointer'
+                  }}
+                >
+                  👤 Login / Register
+                </button>
+              )}
+
               <button
                 className="btn btn-primary"
                 style={{ fontSize: '12px', padding: '6px 14px', borderRadius: '20px' }}
@@ -131,6 +274,7 @@ export default function SocLayout() {
               >
                 🤖 AI Sentinel Copilot
               </button>
+
               <div className="topbar-status">
                 <span className="status-dot" />
                 Autonomous Active

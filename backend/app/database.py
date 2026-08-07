@@ -10,7 +10,7 @@ To switch to PostgreSQL, change DATABASE_URL in .env to:
 No other code changes are needed — SQLAlchemy handles the rest.
 """
 
-from sqlalchemy import create_engine, event
+from sqlalchemy import create_engine, event, text
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 from app.config import get_settings
 
@@ -48,10 +48,6 @@ def get_db():
     """
     FastAPI dependency that provides a database session per request.
     Automatically closes the session when the request is done.
-
-    Usage in a route:
-        def my_endpoint(db: Session = Depends(get_db)):
-            ...
     """
     db = SessionLocal()
     try:
@@ -64,3 +60,12 @@ def create_all_tables():
     """Create all tables if they don't exist. Called on app startup."""
     from app.models import security_event, incident, user, asset, risk_score, response_action, audit_log  # noqa: F401
     Base.metadata.create_all(bind=engine)
+
+    # SQLite migration: Ensure password_hash column exists on users table
+    with engine.connect() as conn:
+        try:
+            conn.execute(text("ALTER TABLE users ADD COLUMN password_hash VARCHAR(256)"))
+            conn.commit()
+        except Exception:
+            # Column already exists
+            pass

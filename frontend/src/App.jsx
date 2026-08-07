@@ -11,12 +11,15 @@ import MultiModal from './pages/MultiModal'
 import SoarRules from './pages/SoarRules'
 import Simulator from './pages/Simulator'
 import Landing from './pages/Landing'
+import Auth from './pages/Auth'
 
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Landing />} />
+        <Route path="/login" element={<Auth />} />
+        <Route path="/register" element={<Auth />} />
         
         <Route path="/soc" element={<SocLayout />}>
           <Route index element={<Dashboard />} />

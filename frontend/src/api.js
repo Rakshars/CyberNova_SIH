@@ -56,6 +56,8 @@ export const triggerSimulatedAttack = triggerRedTeamAttack;
 /* Users */
 export const getUsers = ()           => get('/users');
 export const getUser  = (username)   => get(`/users/${username}`);
+export const registerUser = (body)   => post('/users/register', body);
+export const loginUser    = (body)   => post('/users/login', body);
 
 /* Multi-Modal Security Hub */
 export const scanPhishingUrl = (url) => post('/multimodal/phishing', { url });
