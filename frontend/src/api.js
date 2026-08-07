@@ -18,6 +18,16 @@ async function post(path, body) {
   return res.json();
 }
 
+async function patch(path, body) {
+  const res = await fetch(BASE + path, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+  return res.json();
+}
+
 /* Dashboard */
 export const getDashboardSummary = () => get('/dashboard/summary');
 
@@ -40,7 +50,31 @@ export const getEvents = (params = {}) => {
   return get('/events' + (q ? '?' + q : ''));
 };
 export const simulateEvent = (body) => post('/events', body);
+export const triggerRedTeamAttack = (attackType) => post(`/events/simulate/attack?attack_type=${attackType}`, {});
+export const triggerSimulatedAttack = triggerRedTeamAttack;
 
 /* Users */
 export const getUsers = ()           => get('/users');
 export const getUser  = (username)   => get(`/users/${username}`);
+
+/* Multi-Modal Security Hub */
+export const scanPhishingUrl = (url) => post('/multimodal/phishing', { url });
+export const scanScamMessage = (text, channel = 'SMS') => post('/multimodal/scam', { text, channel });
+export const scanDeepfakeMedia = async (formData) => {
+  const res = await fetch(BASE + '/multimodal/deepfake', {
+    method: 'POST',
+    body: formData,
+  });
+  if (!res.ok) throw new Error(`${res.status} ${res.statusText}`);
+  return res.json();
+};
+
+/* SOAR Playbooks & Automation */
+export const getSoarPolicies = () => get('/soar/policies');
+export const createSoarPolicy = (body) => post('/soar/policies', body);
+export const toggleSoarPolicy = (id, enabled) => patch(`/soar/policies/${id}`, { enabled });
+export const getSoarLogs = () => get('/soar/logs');
+
+/* AI SOC Co-Pilot (CyberNova Sentinel) */
+export const queryCopilot = (query) => post('/copilot/query', { query });
+export const investigateWithCopilot = (incidentId) => get(`/copilot/investigate/${incidentId}`);

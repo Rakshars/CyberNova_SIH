@@ -7,7 +7,7 @@ WHAT CHANGED:
 - generate_dataset() returns a list of dicts (no CSV writing here — DB does that)
 - Added event_type field to every event for the new common event schema
 - Seed is optional parameter (default 42 for reproducibility)
-- Type hints added
+- Added Bharat FinTech UPI Transaction Anomaly & Multi-Modal simulation helpers
 
 WHAT IS PRESERVED:
 - All scenario logic: normal login, suspicious login, brute-force burst
@@ -112,6 +112,23 @@ def generate_brute_force_burst(
             "browser": rng.choice(BROWSERS),
         })
     return events
+
+
+def generate_upi_transaction_anomaly(base_date: datetime, rng: random.Random) -> dict[str, Any]:
+    user = rng.choice(USERNAMES)
+    return {
+        "event_type": "transaction_upi",
+        "timestamp": datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S"),
+        "username": user,
+        "ip_address": _random_ip(rng),
+        "country": "India",
+        "vpa": f"{user}@okaxis",
+        "amount": rng.randint(45000, 150000),
+        "login_status": "Flagged",
+        "device": "Android-Phone",
+        "browser": "UPI App Mobile",
+        "note": "Rapid Micro-debit surge detected outside normal daily baseline"
+    }
 
 
 def generate_dataset(

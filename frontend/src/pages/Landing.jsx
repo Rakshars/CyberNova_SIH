@@ -1,110 +1,172 @@
 import { useNavigate } from 'react-router-dom'
-import { Shield, Skull } from 'lucide-react'
+import { Shield, Skull, ArrowRight } from 'lucide-react'
 
 export default function Landing() {
   const navigate = useNavigate()
 
   return (
     <div style={{
-      width: '100%',
+      width: '100vw',
       minHeight: '100vh',
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
       justifyContent: 'center',
       padding: '40px 20px',
-      background: 'radial-gradient(circle at center, var(--surface-2) 0%, var(--bg) 100%)'
+      background: 'radial-gradient(circle at center, #111827 0%, #030712 100%)',
+      color: '#ffffff',
+      fontFamily: "'Plus Jakarta Sans', sans-serif"
     }}>
-      <div style={{ textAlign: 'center', marginBottom: 60 }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, marginBottom: 16 }}>
-          <div style={{ width: 40, height: 40, background: 'var(--accent)', borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff' }}>
-            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2" width="24" height="24">
-              <path d="M8 1L14.5 4.5V8C14.5 11.5 11.5 14.5 8 15C4.5 14.5 1.5 11.5 1.5 8V4.5L8 1Z" strokeLinejoin="round" />
-              <path d="M5 8l2 2 4-4" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+      {/* Header */}
+      <div style={{ textAlign: 'center', marginBottom: '50px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', marginBottom: '16px' }}>
+          <div style={{
+            width: '48px',
+            height: '48px',
+            background: 'linear-gradient(135deg, #00f2fe 0%, #4facfe 100%)',
+            borderRadius: '12px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            boxShadow: '0 0 25px rgba(0, 242, 254, 0.5)'
+          }}>
+            <Shield size={26} color="#030712" />
           </div>
-          <h1 style={{ fontSize: 32, margin: 0, letterSpacing: '-0.02em', color: 'var(--text)' }}>Autonomous SOC</h1>
+          <h1 style={{ fontSize: '36px', fontWeight: 800, margin: 0, letterSpacing: '-0.02em', color: '#ffffff' }}>
+            CyberNova SOC Platform
+          </h1>
         </div>
-        <p style={{ color: 'var(--text-sub)', fontSize: 16 }}>Select your operational environment</p>
+        <p style={{ color: '#9ca3af', fontSize: '16px', maxWidth: '500px', margin: '0 auto' }}>
+          Autonomous AI-Driven Cybersecurity Operations &amp; Threat Containment System
+        </p>
       </div>
 
-      <div style={{ display: 'flex', gap: 32, flexWrap: 'wrap', justifyContent: 'center', maxWidth: 900 }}>
+      {/* Operation Environment Cards */}
+      <div style={{ display: 'flex', gap: '28px', flexWrap: 'wrap', justifyContent: 'center', maxWidth: '800px', width: '100%' }}>
         
-        {/* Defender Card */}
-        <button 
+        {/* Blue Team Defender Card */}
+        <div 
           onClick={() => navigate('/soc')}
           style={{
-            background: 'var(--surface)',
-            border: '1px solid var(--accent-dim)',
-            borderRadius: '16px',
-            padding: '40px',
-            width: 320,
+            flex: '1 1 320px',
+            background: 'rgba(17, 24, 39, 0.85)',
+            border: '1px solid rgba(0, 242, 254, 0.35)',
+            borderRadius: '20px',
+            padding: '36px 28px',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             textAlign: 'center',
             cursor: 'pointer',
-            transition: 'all 0.3s ease',
-            boxShadow: '0 10px 40px -10px rgba(59, 130, 246, 0.1)',
-            outline: 'none',
+            transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+            boxShadow: '0 10px 40px rgba(0, 242, 254, 0.12)',
+            position: 'relative',
+            overflow: 'hidden'
           }}
           onMouseEnter={e => {
-            e.currentTarget.style.transform = 'translateY(-4px)'
-            e.currentTarget.style.borderColor = 'var(--accent)'
-            e.currentTarget.style.boxShadow = '0 20px 40px -10px rgba(59, 130, 246, 0.2)'
+            e.currentTarget.style.transform = 'translateY(-6px)'
+            e.currentTarget.style.borderColor = '#00f2fe'
+            e.currentTarget.style.boxShadow = '0 20px 50px rgba(0, 242, 254, 0.25)'
           }}
           onMouseLeave={e => {
             e.currentTarget.style.transform = 'translateY(0)'
-            e.currentTarget.style.borderColor = 'var(--accent-dim)'
-            e.currentTarget.style.boxShadow = '0 10px 40px -10px rgba(59, 130, 246, 0.1)'
+            e.currentTarget.style.borderColor = 'rgba(0, 242, 254, 0.35)'
+            e.currentTarget.style.boxShadow = '0 10px 40px rgba(0, 242, 254, 0.12)'
           }}
         >
-          <div style={{ width: 80, height: 80, borderRadius: '20px', background: 'var(--accent-dim)', color: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 24 }}>
-            <Shield size={40} />
+          <div style={{
+            width: '74px',
+            height: '74px',
+            borderRadius: '20px',
+            background: 'rgba(0, 242, 254, 0.12)',
+            color: '#00f2fe',
+            border: '1px solid rgba(0, 242, 254, 0.3)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginBottom: '20px',
+            boxShadow: '0 0 20px rgba(0, 242, 254, 0.2)'
+          }}>
+            <Shield size={36} />
           </div>
-          <h2 style={{ fontSize: 24, fontWeight: 600, color: 'var(--text)', marginBottom: 12 }}>Blue Team</h2>
-          <p style={{ color: 'var(--text-sub)', fontSize: 14, lineHeight: 1.5 }}>
-            Enter the SOC Dashboard. Triage alerts, hunt for anomalies, and manage security incidents.
+          <h2 style={{ fontSize: '22px', fontWeight: 800, color: '#ffffff', marginBottom: '8px' }}>Blue Team SOC</h2>
+          <p style={{ color: '#9ca3af', fontSize: '13px', lineHeight: '1.6', marginBottom: '24px' }}>
+            Enter the AI Security Operations Command. Triage live threats, monitor network mesh, and review SOAR playbooks.
           </p>
-        </button>
+          <div style={{
+            marginTop: 'auto',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            color: '#00f2fe',
+            fontWeight: 800,
+            fontSize: '13px'
+          }}>
+            LAUNCH SOC DASHBOARD <ArrowRight size={16} />
+          </div>
+        </div>
 
-        {/* Attacker Card */}
-        <button 
+        {/* Red Team Attacker Card */}
+        <div 
           onClick={() => navigate('/attacker')}
           style={{
-            background: 'var(--surface)',
-            border: '1px solid rgba(248, 81, 73, 0.15)',
-            borderRadius: '16px',
-            padding: '40px',
-            width: 320,
+            flex: '1 1 320px',
+            background: 'rgba(15, 0, 5, 0.85)',
+            border: '1px solid rgba(255, 42, 109, 0.35)',
+            borderRadius: '20px',
+            padding: '36px 28px',
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
             textAlign: 'center',
             cursor: 'pointer',
-            transition: 'all 0.3s ease',
-            boxShadow: '0 10px 40px -10px rgba(248, 81, 73, 0.1)',
-            outline: 'none',
+            transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+            boxShadow: '0 10px 40px rgba(255, 42, 109, 0.12)',
+            position: 'relative',
+            overflow: 'hidden'
           }}
           onMouseEnter={e => {
-            e.currentTarget.style.transform = 'translateY(-4px)'
-            e.currentTarget.style.borderColor = 'var(--critical)'
-            e.currentTarget.style.boxShadow = '0 20px 40px -10px rgba(248, 81, 73, 0.2)'
+            e.currentTarget.style.transform = 'translateY(-6px)'
+            e.currentTarget.style.borderColor = '#ff2a6d'
+            e.currentTarget.style.boxShadow = '0 20px 50px rgba(255, 42, 109, 0.25)'
           }}
           onMouseLeave={e => {
             e.currentTarget.style.transform = 'translateY(0)'
-            e.currentTarget.style.borderColor = 'rgba(248, 81, 73, 0.15)'
-            e.currentTarget.style.boxShadow = '0 10px 40px -10px rgba(248, 81, 73, 0.1)'
+            e.currentTarget.style.borderColor = 'rgba(255, 42, 109, 0.35)'
+            e.currentTarget.style.boxShadow = '0 10px 40px rgba(255, 42, 109, 0.12)'
           }}
         >
-          <div style={{ width: 80, height: 80, borderRadius: '20px', background: 'rgba(248, 81, 73, 0.1)', color: 'var(--critical)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 24 }}>
-            <Skull size={40} />
+          <div style={{
+            width: '74px',
+            height: '74px',
+            borderRadius: '20px',
+            background: 'rgba(255, 42, 109, 0.12)',
+            color: '#ff2a6d',
+            border: '1px solid rgba(255, 42, 109, 0.3)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginBottom: '20px',
+            boxShadow: '0 0 20px rgba(255, 42, 109, 0.2)'
+          }}>
+            <Skull size={36} />
           </div>
-          <h2 style={{ fontSize: 24, fontWeight: 600, color: 'var(--text)', marginBottom: 12 }}>Red Team</h2>
-          <p style={{ color: 'var(--text-sub)', fontSize: 14, lineHeight: 1.5 }}>
-            Enter the Attacker Console. Simulate cyberattacks and test the ML anomaly detection engine.
+          <h2 style={{ fontSize: '22px', fontWeight: 800, color: '#ffffff', marginBottom: '8px' }}>Red Team C2</h2>
+          <p style={{ color: '#9ca3af', fontSize: '13px', lineHeight: '1.6', marginBottom: '24px' }}>
+            Enter the Offensive Cyber Command. Inject custom telemetry vectors and emulate live cyber attacks.
           </p>
-        </button>
+          <div style={{
+            marginTop: 'auto',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            color: '#ff2a6d',
+            fontWeight: 800,
+            fontSize: '13px'
+          }}>
+            LAUNCH ATTACK SIMULATOR <ArrowRight size={16} />
+          </div>
+        </div>
 
       </div>
     </div>

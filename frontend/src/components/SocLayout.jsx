@@ -1,4 +1,7 @@
+import { useState } from 'react'
 import { Outlet, NavLink, useLocation } from 'react-router-dom'
+import CopilotDrawer from './CopilotDrawer'
+import CyberLoadingScreen from './CyberLoadingScreen'
 
 const NAV = [
   {
@@ -25,7 +28,7 @@ const NAV = [
   },
   {
     to: '/events',
-    label: 'Events',
+    label: 'Events Feed',
     icon: (
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
         <path d="M2 4h12M2 8h8M2 12h10" strokeLinecap="round" />
@@ -33,8 +36,27 @@ const NAV = [
     ),
   },
   {
+    to: '/multimodal',
+    label: 'Multi-Modal Security',
+    icon: (
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <circle cx="8" cy="8" r="6" />
+        <path d="M8 4v8M4 8h8" />
+      </svg>
+    ),
+  },
+  {
+    to: '/soar',
+    label: 'SOAR Playbooks',
+    icon: (
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <path d="M3 8h10M8 3v10" strokeLinecap="round" />
+      </svg>
+    ),
+  },
+  {
     to: '/users',
-    label: 'Users',
+    label: 'Users & Profiles',
     icon: (
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5">
         <circle cx="8" cy="5" r="3" />
@@ -45,64 +67,85 @@ const NAV = [
 ]
 
 const PAGE_TITLES = {
-  '/': 'Dashboard',
-  '/incidents': 'Incidents',
-  '/events': 'Events',
-  '/users': 'Users',
+  '/': 'Overview Dashboard',
+  '/incidents': 'Security Incidents',
+  '/events': 'Real-Time Event Stream',
+  '/multimodal': 'Multi-Modal Security Hub',
+  '/soar': 'SOAR & Autonomous Playbooks',
+  '/users': 'User Behavioral Profiles',
 }
 
 export default function SocLayout() {
   const location = useLocation()
+  const [copilotOpen, setCopilotOpen] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
 
   const pageTitle = (() => {
-    if (location.pathname.startsWith('/incidents/')) return 'Incident Detail'
-    if (location.pathname.startsWith('/users/')) return 'User Profile'
-    if (location.pathname === '/simulate') return 'Attack Simulator'
-    return PAGE_TITLES[location.pathname] || ''
+    if (location.pathname.startsWith('/soc/incidents/')) return 'Incident Investigation'
+    if (location.pathname.startsWith('/soc/users/')) return 'User Behavioral Profile'
+    const trimmed = location.pathname.replace('/soc', '') || '/'
+    return PAGE_TITLES[trimmed] || 'SOC Command'
   })()
 
   return (
-    <div className="layout">
-      <aside className="sidebar">
-        <div className="sidebar-logo">
-          <div className="logo-icon">
-            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M8 1L14.5 4.5V8C14.5 11.5 11.5 14.5 8 15C4.5 14.5 1.5 11.5 1.5 8V4.5L8 1Z" strokeLinejoin="round" />
-              <path d="M5 8l2 2 4-4" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+    <>
+      {isLoading && <CyberLoadingScreen onFinished={() => setIsLoading(false)} />}
+
+      <div className="layout">
+        <aside className="sidebar">
+          <div className="sidebar-logo">
+            <div className="logo-icon">
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M8 1L14.5 4.5V8C14.5 11.5 11.5 14.5 8 15C4.5 14.5 1.5 11.5 1.5 8V4.5L8 1Z" strokeLinejoin="round" />
+                <path d="M5 8l2 2 4-4" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+            </div>
+            <div>
+              <div className="logo-text">CyberNova SOC</div>
+              <div className="logo-sub">Autonomous Guard</div>
+            </div>
           </div>
-          <div>
-            <div className="logo-text">SOC Platform</div>
-            <div className="logo-sub">Autonomous</div>
-          </div>
+
+          <div className="nav-section-label">Command Modules</div>
+          {NAV.map(({ to, label, icon }) => (
+            <NavLink
+              key={to}
+              to={`/soc${to === '/' ? '' : to}`}
+              end={to === '/'}
+              className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
+            >
+              {icon}
+              {label}
+            </NavLink>
+          ))}
+        </aside>
+
+        <div className="main">
+          <header className="topbar">
+            <span className="topbar-title">{pageTitle}</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <button
+                className="btn btn-primary"
+                style={{ fontSize: '12px', padding: '6px 14px', borderRadius: '20px' }}
+                onClick={() => setCopilotOpen(true)}
+              >
+                🤖 AI Sentinel Copilot
+              </button>
+              <div className="topbar-status">
+                <span className="status-dot" />
+                Autonomous Active
+              </div>
+            </div>
+          </header>
+
+          <main className="page-content" style={{ position: 'relative' }}>
+            <Outlet />
+          </main>
         </div>
 
-        <div className="nav-section-label">Monitor</div>
-        {NAV.map(({ to, label, icon }) => (
-          <NavLink
-            key={to}
-            to={`/soc${to === '/' ? '' : to}`}
-            end={to === '/'}
-            className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
-          >
-            {icon}
-            {label}
-          </NavLink>
-        ))}
-      </aside>
-
-      <div className="main">
-        <header className="topbar">
-          <span className="topbar-title">{pageTitle}</span>
-          <div className="topbar-status">
-            <span className="status-dot" />
-            Live
-          </div>
-        </header>
-        <main className="page-content">
-          <Outlet />
-        </main>
+        {/* Global AI Copilot Assistant Drawer */}
+        <CopilotDrawer isOpen={copilotOpen} onClose={() => setCopilotOpen(false)} />
       </div>
-    </div>
+    </>
   )
 }

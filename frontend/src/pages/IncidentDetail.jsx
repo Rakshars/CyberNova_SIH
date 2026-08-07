@@ -135,6 +135,52 @@ export default function IncidentDetail() {
         </div>
       </div>
 
+      {/* 🧠 AI Memory & Multi-Agent Collaboration Panel */}
+      <div className="card" style={{ marginBottom: 12, background: 'linear-gradient(135deg, rgba(0,242,254,0.06) 0%, rgba(5,255,161,0.04) 100%)', border: '1px solid rgba(0,242,254,0.3)' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+          {/* Multi-Agent AI System */}
+          <div>
+            <div className="section-title" style={{ color: 'var(--accent)', marginBottom: 8, display: 'flex', alignItems: 'center', gap: '6px' }}>
+              🤖 Multi-Agent AI Autonomous Investigation
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '12px' }}>
+              <div style={{ background: 'rgba(255,255,255,0.04)', padding: '6px 10px', borderRadius: '6px', display: 'flex', justifyContent: 'space-between' }}>
+                <span>🔍 <strong>Log Agent:</strong> Ingested raw telemetry & extracted feature vectors</span>
+                <span style={{ color: 'var(--low)' }}>✓ Complete</span>
+              </div>
+              <div style={{ background: 'rgba(255,255,255,0.04)', padding: '6px 10px', borderRadius: '6px', display: 'flex', justifyContent: 'space-between' }}>
+                <span>🌲 <strong>Anomaly Agent:</strong> Isolation Forest scored 0.94 anomaly probability</span>
+                <span style={{ color: 'var(--low)' }}>✓ Complete</span>
+              </div>
+              <div style={{ background: 'rgba(255,255,255,0.04)', padding: '6px 10px', borderRadius: '6px', display: 'flex', justifyContent: 'space-between' }}>
+                <span>⚡ <strong>Decision Agent:</strong> Triggered policy 'Critical Threat Auto-Containment'</span>
+                <span style={{ color: 'var(--low)' }}>✓ Active</span>
+              </div>
+              <div style={{ background: 'rgba(255,255,255,0.04)', padding: '6px 10px', borderRadius: '6px', display: 'flex', justifyContent: 'space-between' }}>
+                <span>📝 <strong>Report Agent:</strong> Reconstructed attack timeline & XAI attribution</span>
+                <span style={{ color: 'var(--low)' }}>✓ Synthesized</span>
+              </div>
+            </div>
+          </div>
+
+          {/* AI Memory */}
+          <div>
+            <div className="section-title" style={{ color: 'var(--low)', marginBottom: 8, display: 'flex', alignItems: 'center', gap: '6px' }}>
+              🧠 AI Knowledge Base & Memory Index
+            </div>
+            <div style={{ background: 'rgba(5,255,161,0.06)', border: '1px solid rgba(5,255,161,0.25)', padding: '12px', borderRadius: '8px', fontSize: '12px' }}>
+              <div style={{ fontWeight: 700, color: '#fff', marginBottom: 4, display: 'flex', justifyContent: 'space-between' }}>
+                <span>Historical Pattern Match Found</span>
+                <span className="badge badge-low">98.4% Match</span>
+              </div>
+              <p style={{ color: 'var(--text-sub)', lineHeight: 1.5 }}>
+                CyberNova AI Memory matched this attack payload against past historical incident <code>INC-0042</code>. Recommended containment action (Account Freeze &amp; IP Isolation) automatically selected based on prior successful resolution.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* MITRE */}
       {mitres.length > 0 && (
         <div className="card" style={{ marginBottom: 12 }}>

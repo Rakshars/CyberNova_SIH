@@ -21,7 +21,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.config import get_settings
 from app.database import create_all_tables, SessionLocal
 from app.services.seeder import seed_if_empty
-from app.api import dashboard, events, incidents, users
+from app.api import dashboard, events, incidents, users, multimodal, soar, copilot
 
 # Configure logging
 logging.basicConfig(
@@ -78,6 +78,9 @@ app.include_router(dashboard.router)
 app.include_router(events.router)
 app.include_router(incidents.router)
 app.include_router(users.router)
+app.include_router(multimodal.router)
+app.include_router(soar.router)
+app.include_router(copilot.router)
 
 
 @app.get("/health")

@@ -7,6 +7,8 @@ import IncidentDetail from './pages/IncidentDetail'
 import Events from './pages/Events'
 import Users from './pages/Users'
 import UserDetail from './pages/UserDetail'
+import MultiModal from './pages/MultiModal'
+import SoarRules from './pages/SoarRules'
 import Simulator from './pages/Simulator'
 import Landing from './pages/Landing'
 
@@ -23,13 +25,15 @@ export default function App() {
           <Route path="events" element={<Events />} />
           <Route path="users" element={<Users />} />
           <Route path="users/:username" element={<UserDetail />} />
+          <Route path="multimodal" element={<MultiModal />} />
+          <Route path="soar" element={<SoarRules />} />
         </Route>
 
         <Route path="/attacker" element={<AttackerLayout />}>
           <Route index element={<Simulator />} />
         </Route>
 
-        <Route path="*" element={<Navigate to="/" replace />} />
+        <Route path="*" element={<Navigate to="/soc" replace />} />
       </Routes>
     </BrowserRouter>
   )
