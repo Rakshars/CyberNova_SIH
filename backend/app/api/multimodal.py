@@ -11,9 +11,11 @@ Handles:
 from fastapi import APIRouter, File, UploadFile, Form, HTTPException
 from pydantic import BaseModel
 from typing import Optional, List
+from datetime import datetime, timezone
 import re
 import math
-import hashlib
+
+from app.detection.deepfake_detector import analyze_image_bytes
 
 router = APIRouter(prefix="/api/multimodal", tags=["Multi-Modal Security Scanners"])
 
@@ -156,41 +158,51 @@ def scan_scam_message(payload: TextScamRequest):
     return classify_scam_text(payload.text, payload.channel)
 
 
-# --- 3. Deepfake Image & Video Analysis ---
+# --- 3. Deepfake Image Analysis ---
 @router.post("/deepfake")
 async def analyze_deepfake(file: UploadFile = File(...)):
     """
-    Analyzes uploaded media file for synthetic manipulation, face-swap artifacts,
-    and frame consistency anomalies.
+    Analyzes an uploaded image for synthetic/AI-generated manipulation using
+    the Community Forensics ViT model (Park & Owens, Univ. of Michigan,
+    arXiv:2411.04125). Video support is not yet implemented - see
+    app/detection/deepfake_detector.py.
     """
     content = await file.read()
     if not content:
         raise HTTPException(status_code=400, detail="Uploaded file is empty")
+    if "video" in (file.content_type or ""):
+        raise HTTPException(status_code=400, detail="Video analysis not yet supported - upload an image")
 
-    file_hash = hashlib.md5(content).hexdigest()
-    hash_int = int(file_hash[:4], 16)
-    
-    # Deterministic simulation based on file hash signature
-    deepfake_score = (hash_int % 60) + 38  # Score between 38 and 98
-    
-    if deepfake_score > 70:
+    result = analyze_image_bytes(content)
+    if "error" in result:
+        raise HTTPException(status_code=400, detail=result["error"])
+
+    score = result["fake_probability"]
+    deepfake_score = round(score * 100)
+
+    if score >= 0.5:
         verdict = "SYNTHETIC DEEPFAKE DETECTED"
-        confidence = "HIGH"
-        anomalies = [
-            "Facial boundary blending artifacts around cheekbones (+32%)",
-            "Inconsistent lighting vector between eyes and neck (+28%)",
-            "Eye-blink rate deviation (0 blinks in 10s sequence) (+22%)",
-            "GAN spatial noise frequency spectrum peak detected (+18%)"
-        ]
-        heatmaps = [
-            {"region": "Eye / Orbital Region", "risk": "High", "x": "32%", "y": "28%", "width": "35%", "height": "18%"},
-            {"region": "Mouth / Lip Sync", "risk": "Critical", "x": "38%", "y": "54%", "width": "24%", "height": "20%"}
-        ]
+        confidence = "HIGH" if score >= 0.85 else "MEDIUM"
     else:
         verdict = "AUTHENTIC MEDIA"
-        confidence = "LOW"
-        anomalies = ["Normal physiological motion detected", "Uniform lighting vector", "Standard sensor compression profile"]
-        heatmaps = []
+        confidence = "HIGH" if score <= 0.15 else "MEDIUM"
+
+    anomalies = [
+        f"ViT forensics model (trained on 2.7M images across 4,800+ generators) "
+        f"assigned a {deepfake_score}% synthetic-manipulation probability to this image."
+    ]
+
+    heatmaps = []
+    if result["bbox"]:
+        b = result["bbox"]
+        heatmaps.append({
+            "region": "Detected Face",
+            "risk": "High" if score >= 0.5 else "Low",
+            "x": f"{b['x_pct']:.0f}%",
+            "y": f"{b['y_pct']:.0f}%",
+            "width": f"{b['w_pct']:.0f}%",
+            "height": f"{b['h_pct']:.0f}%",
+        })
 
     return {
         "filename": file.filename,
@@ -200,6 +212,6 @@ async def analyze_deepfake(file: UploadFile = File(...)):
         "confidence_level": confidence,
         "anomalies_detected": anomalies,
         "heatmap_regions": heatmaps,
-        "frame_count_analyzed": 120 if "video" in (file.content_type or "") else 1,
-        "analysis_timestamp": "Real-time AI Frame Scan Complete"
+        "frame_count_analyzed": 1,
+        "analysis_timestamp": datetime.now(timezone.utc).isoformat(),
     }
