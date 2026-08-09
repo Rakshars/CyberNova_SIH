@@ -80,7 +80,7 @@ export default function SoarRules() {
               <button
                 className={`toggle-btn ${p.enabled ? 'active' : ''}`}
                 onClick={() => handleToggle(p.id, p.enabled)}
-                style={{ fontSize: '11px', padding: '3px 8px' }}
+                style={{ fontSize: '11px', padding: '3px 8px',color: "white",border:"1px solid white" ,borderRadius:"5px" ,backgroundColor:p.enabled ? "green" : "red"}}
               >
                 {p.enabled ? '● Enabled' : '○ Disabled'}
               </button>

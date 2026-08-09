@@ -34,9 +34,9 @@ def create_incident_from_event(event: SecurityEvent, db: Session) -> Incident:
         id=str(uuid.uuid4()),
         incident_id=_next_incident_id(db),
         title=f"Suspicious activity by {event.username} from {event.country}",
-        incident_type="auth_anomaly",
+        incident_type=event.event_type or "auth_anomaly",
         status="open",
-        severity=event.risk_level.lower() if event.risk_level else "medium",
+        severity=(event.risk_level.upper() if event.risk_level else "MEDIUM"),
         risk_score=event.risk_score or 0,
         confidence=0.7,
         affected_username=event.username,
@@ -51,6 +51,20 @@ def create_incident_from_event(event: SecurityEvent, db: Session) -> Incident:
     )
     db.add(inc)
     db.flush()  # get the incident ID without committing
+
+    # Evaluate SOAR policies and execute playbook actions automatically
+    from app.response.policy_engine import policy_engine
+    incident_payload = {
+        "id": inc.id,
+        "title": inc.title,
+        "risk_score": inc.risk_score,
+        "severity": inc.severity,
+        "event_type": event.event_type or "",
+        "target_user": inc.affected_username,
+        "ip_address": inc.affected_ip
+    }
+    soar_actions = policy_engine.evaluate_incident(incident_payload, db=db, incident_id=inc.id, commit=True)
+    inc.response_taken = soar_actions
 
     # Link the event to the incident
     event.incident_id = inc.id

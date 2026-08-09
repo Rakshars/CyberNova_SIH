@@ -54,12 +54,13 @@ def query_copilot(payload: QueryRequest, db: Session = Depends(get_db)):
         suggested_actions = ["Block All Tor Exit Nodes", "Run Isolation Forest Retrain", "View Incident Map"]
 
     elif "soar" in q or "policy" in q or "mitigat" in q or "action" in q:
-        active_pols = [p for p in policy_engine.get_policies() if p.get("enabled")]
+        active_pols = [p for p in policy_engine.get_policies(db) if p.get("enabled")]
+        logs = policy_engine.get_execution_logs(db)
         response_text = (
             f"🛡️ **Autonomous SOAR Status:**\n"
             f"• Currently running **{len(active_pols)} active policy rules**.\n"
             "• **Average Reaction Speed:** 84ms (Instantaneous auto-isolation).\n"
-            f"• **Recent Actions Executed:** {len(policy_engine.execution_logs)} automated containment actions logged.\n"
+            f"• **Recent Actions Executed:** {len(logs)} automated containment actions logged.\n"
             "• **Coverage:** IP Rate limiting, Session revocation, UPI VPA Freeze, Telegram webhook alerts."
         )
         suggested_actions = ["View SOAR Rule Manager", "Test Policy Execution", "Export Audit Trail"]

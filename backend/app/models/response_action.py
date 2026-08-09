@@ -21,6 +21,7 @@ class ResponseAction(Base):
     reason: Mapped[str] = mapped_column(Text, nullable=True)
 
     executed_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    policy_name: Mapped[str] = mapped_column(String(255), nullable=True)
 
     # Relationship
     incident: Mapped["Incident"] = relationship("Incident", back_populates="response_actions")  # type: ignore

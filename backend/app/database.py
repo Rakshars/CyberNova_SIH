@@ -58,14 +58,20 @@ def get_db():
 
 def create_all_tables():
     """Create all tables if they don't exist. Called on app startup."""
-    from app.models import security_event, incident, user, asset, risk_score, response_action, audit_log  # noqa: F401
+    from app.models import security_event, incident, user, asset, risk_score, response_action, audit_log, soar_policy  # noqa: F401
     Base.metadata.create_all(bind=engine)
 
     # SQLite migration: Ensure password_hash column exists on users table
+    # and policy_name column exists on response_actions table
     with engine.connect() as conn:
         try:
             conn.execute(text("ALTER TABLE users ADD COLUMN password_hash VARCHAR(256)"))
             conn.commit()
         except Exception:
-            # Column already exists
+            pass
+
+        try:
+            conn.execute(text("ALTER TABLE response_actions ADD COLUMN policy_name VARCHAR(255)"))
+            conn.commit()
+        except Exception:
             pass
