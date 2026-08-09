@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { scanPhishingUrl, scanScamMessage, scanDeepfakeMedia } from '../api'
 
 export default function MultiModal() {
@@ -17,8 +17,16 @@ export default function MultiModal() {
 
   // Deepfake state
   const [file, setFile] = useState(null)
+  const [previewUrl, setPreviewUrl] = useState(null)
   const [deepfakeResult, setDeepfakeResult] = useState(null)
   const [deepfakeLoading, setDeepfakeLoading] = useState(false)
+
+  // Revoke the preview blob URL whenever it changes or the component unmounts
+  useEffect(() => {
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl)
+    }
+  }, [previewUrl])
 
   const handleScanUrl = async (e) => {
     e.preventDefault()
@@ -186,7 +194,15 @@ export default function MultiModal() {
               <input
                 type="file"
                 accept="image/*,video/*"
-                onChange={(e) => setFile(e.target.files[0])}
+                onChange={(e) => {
+                  const selected = e.target.files[0] || null
+                  setFile(selected)
+                  setDeepfakeResult(null)
+                  setPreviewUrl((prev) => {
+                    if (prev) URL.revokeObjectURL(prev)
+                    return selected ? URL.createObjectURL(selected) : null
+                  })
+                }}
                 style={{ cursor: 'pointer' }}
               />
               <p style={{ marginTop: '8px', color: 'var(--text-sub)', fontSize: '12px' }}>Upload suspect video or photo to run facial artifact & GAN manipulation heatmaps</p>
@@ -195,6 +211,30 @@ export default function MultiModal() {
               {deepfakeLoading ? 'Analyzing Frame Vectors...' : 'Analyze Media File'}
             </button>
           </form>
+
+          {previewUrl && (
+            <div style={{ position: 'relative', display: 'inline-block', maxWidth: '100%', marginBottom: '20px' }}>
+              <img
+                src={previewUrl}
+                alt="Uploaded media preview"
+                style={{ display: 'block', maxWidth: '100%', maxHeight: '360px', borderRadius: 'var(--radius)', border: '1px solid var(--border-sub)' }}
+              />
+              {deepfakeResult?.heatmap_regions?.[0] && (
+                <div
+                  style={{
+                    position: 'absolute',
+                    left: deepfakeResult.heatmap_regions[0].x,
+                    top: deepfakeResult.heatmap_regions[0].y,
+                    width: deepfakeResult.heatmap_regions[0].width,
+                    height: deepfakeResult.heatmap_regions[0].height,
+                    border: '2px solid var(--critical)',
+                    borderRadius: '4px',
+                    pointerEvents: 'none',
+                  }}
+                />
+              )}
+            </div>
+          )}
 
           {deepfakeResult && (
             <div style={{ background: 'var(--surface-2)', padding: '16px', borderRadius: 'var(--radius)', border: '1px solid var(--border-sub)' }}>
