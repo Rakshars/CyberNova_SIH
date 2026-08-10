@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { Outlet, NavLink } from 'react-router-dom'
-import { Terminal, Shield, Skull, Zap } from 'lucide-react'
+import { Outlet, NavLink, useNavigate } from 'react-router-dom'
+import { Terminal, Shield, Skull, Zap, Home } from 'lucide-react'
 import RedLoadingScreen from './RedLoadingScreen'
 
 const NAV = [
@@ -13,6 +13,7 @@ const NAV = [
 
 export default function AttackerLayout() {
   const [loading, setLoading] = useState(true)
+  const navigate = useNavigate()
 
   return (
     <>
@@ -21,8 +22,8 @@ export default function AttackerLayout() {
       <div className="layout attacker-theme" style={{ background: '#070002', color: '#f3f4f6' }}>
         <aside className="sidebar" style={{ background: '#0e0104', borderRight: '1px solid rgba(255, 42, 109, 0.25)' }}>
           <div className="sidebar-logo" style={{ borderBottom: '1px solid rgba(255, 42, 109, 0.25)' }}>
-            <div className="logo-icon" style={{ background: 'linear-gradient(135deg, #ff2a6d 0%, #990022 100%)', boxShadow: '0 0 15px rgba(255, 42, 109, 0.5)' }}>
-              <Skull size={18} color="#fff" />
+            <div className="logo-icon" style={{ background: 'transparent', boxShadow: '0 0 15px rgba(255, 42, 109, 0.4)', padding: 0, overflow: 'hidden', borderRadius: '10px' }}>
+              <img src="/logo.png" alt="CyberNova Logo" style={{ width: '34px', height: '34px', objectFit: 'contain', filter: 'hue-rotate(160deg) saturate(1.5)', borderRadius: '8px' }} />
             </div>
             <div>
               <div className="logo-text" style={{ background: 'linear-gradient(90deg, #ffffff 0%, #ff2a6d 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
@@ -50,6 +51,38 @@ export default function AttackerLayout() {
 
           <div style={{ flex: 1 }} />
           
+          {/* Back to Landing Page */}
+          <button
+            onClick={() => navigate('/')}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 10,
+              padding: '10px 14px',
+              color: '#fff',
+              fontSize: 12,
+              fontWeight: 700,
+              cursor: 'pointer',
+              borderRadius: 10,
+              background: 'rgba(255, 255, 255, 0.05)',
+              border: '1px solid rgba(255, 255, 255, 0.15)',
+              width: '100%',
+              marginBottom: '8px',
+              transition: 'all 0.2s'
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
+              e.currentTarget.style.transform = 'translateY(-2px)'
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
+              e.currentTarget.style.transform = 'none'
+            }}
+          >
+            <Home size={15} />
+            ← Back to Home
+          </button>
+
           <NavLink 
             to="/soc" 
             style={{ 

@@ -1,9 +1,12 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState, useRef } from 'react'
 
 export default function CyberLoadingScreen({ onFinished }) {
   const [progress, setProgress] = useState(0)
   const [statusText, setStatusText] = useState('INITIALIZING CYBERNOVA THREAT ENGINE...')
   const [fading, setFading] = useState(false)
+
+  const onFinishedRef = useRef(onFinished)
+  useEffect(() => { onFinishedRef.current = onFinished })
 
   useEffect(() => {
     const statuses = [
@@ -24,13 +27,13 @@ export default function CyberLoadingScreen({ onFinished }) {
         clearInterval(interval)
         setTimeout(() => setFading(true), 300)
         setTimeout(() => {
-          if (onFinished) onFinished()
+          if (onFinishedRef.current) onFinishedRef.current()
         }, 800)
       }
     }, 450)
 
     return () => clearInterval(interval)
-  }, [onFinished])
+  }, [])
 
   return (
     <div style={{
@@ -88,25 +91,28 @@ export default function CyberLoadingScreen({ onFinished }) {
           animation: 'cyberSpinReverse 2.5s linear infinite'
         }} />
 
-        {/* Center Shield Icon */}
+        {/* Center Logo Icon */}
         <div style={{
           position: 'absolute',
           top: '50%',
           left: '50%',
           transform: 'translate(-50%, -50%)',
-          width: '60px',
-          height: '60px',
-          background: 'linear-gradient(135deg, #00f2fe 0%, #ff2a6d 100%)',
+          width: '64px',
+          height: '64px',
           borderRadius: '16px',
+          overflow: 'hidden',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          boxShadow: '0 0 30px rgba(0, 242, 254, 0.6)'
+          boxShadow: '0 0 30px rgba(0, 242, 254, 0.7), 0 0 60px rgba(0, 242, 254, 0.3)',
+          background: 'rgba(0,0,0,0.4)',
+          border: '1px solid rgba(0, 242, 254, 0.4)'
         }}>
-          <svg viewBox="0 0 24 24" fill="none" stroke="#030712" strokeWidth="2.5" style={{ width: 32, height: 32 }}>
-            <path d="M12 2L3 7v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-9-5z" strokeLinejoin="round" />
-            <path d="M9 12l2 2 4-4" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
+          <img
+            src="/logo.png"
+            alt="CyberNova"
+            style={{ width: '64px', height: '64px', objectFit: 'contain' }}
+          />
         </div>
       </div>
 

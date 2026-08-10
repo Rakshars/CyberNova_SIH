@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import CopilotDrawer from './CopilotDrawer'
 import CyberLoadingScreen from './CyberLoadingScreen'
-import { User, LogIn, LogOut, UserPlus } from 'lucide-react'
+import { User, LogIn, LogOut, UserPlus, Home } from 'lucide-react'
 
 const NAV = [
   {
@@ -124,11 +124,8 @@ export default function SocLayout() {
       <div className="layout">
         <aside className="sidebar">
           <div className="sidebar-logo">
-            <div className="logo-icon">
-              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M8 1L14.5 4.5V8C14.5 11.5 11.5 14.5 8 15C4.5 14.5 1.5 11.5 1.5 8V4.5L8 1Z" strokeLinejoin="round" />
-                <path d="M5 8l2 2 4-4" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
+            <div className="logo-icon" style={{ background: 'transparent', boxShadow: 'none', padding: 0, overflow: 'hidden' }}>
+              <img src="/logo.png" alt="CyberNova SOC Logo" style={{ width: '34px', height: '34px', objectFit: 'contain', borderRadius: '8px' }} />
             </div>
             <div>
               <div className="logo-text">CyberNova SOC</div>
@@ -150,6 +147,40 @@ export default function SocLayout() {
           ))}
 
           <div style={{ flex: 1 }} />
+
+          {/* Back to Landing Page */}
+          <button
+            onClick={() => navigate('/')}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              padding: '10px 12px',
+              borderRadius: '10px',
+              background: 'rgba(0, 242, 254, 0.07)',
+              border: '1px solid rgba(0, 242, 254, 0.25)',
+              color: 'var(--accent)',
+              fontSize: '12px',
+              fontWeight: 700,
+              cursor: 'pointer',
+              width: '100%',
+              transition: 'all 0.2s',
+              marginBottom: '6px'
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.background = 'rgba(0, 242, 254, 0.15)'
+              e.currentTarget.style.transform = 'translateY(-1px)'
+              e.currentTarget.style.boxShadow = '0 0 14px rgba(0, 242, 254, 0.2)'
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.background = 'rgba(0, 242, 254, 0.07)'
+              e.currentTarget.style.transform = 'none'
+              e.currentTarget.style.boxShadow = 'none'
+            }}
+          >
+            <Home size={15} />
+            ← Back to Home
+          </button>
 
           {/* User Auth & Logout Link in Sidebar Footer */}
           {currentUser ? (

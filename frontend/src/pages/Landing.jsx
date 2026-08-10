@@ -18,24 +18,26 @@ export default function Landing() {
       fontFamily: "'Plus Jakarta Sans', sans-serif"
     }}>
       {/* Header */}
-      <div style={{ textAlign: 'center', marginBottom: '50px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px', marginBottom: '16px' }}>
-          <div style={{
-            width: '48px',
-            height: '48px',
-            background: 'linear-gradient(135deg, #00f2fe 0%, #4facfe 100%)',
-            borderRadius: '12px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: '0 0 25px rgba(0, 242, 254, 0.5)'
-          }}>
-            <Shield size={26} color="#030712" />
+        <div style={{ textAlign: 'center', marginBottom: '50px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', marginBottom: '16px' }}>
+            <div style={{
+              width: '64px',
+              height: '64px',
+              borderRadius: '16px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 0 30px rgba(0, 242, 254, 0.5), 0 0 60px rgba(0, 242, 254, 0.2)',
+              overflow: 'hidden',
+              background: 'rgba(0,0,0,0.3)',
+              border: '1px solid rgba(0, 242, 254, 0.3)'
+            }}>
+              <img src="/logo.png" alt="CyberNova Logo" style={{ width: '64px', height: '64px', objectFit: 'contain' }} />
+            </div>
+            <h1 style={{ fontSize: '36px', fontWeight: 800, margin: 0, letterSpacing: '-0.02em', color: '#ffffff' }}>
+              CyberNova SOC Platform
+            </h1>
           </div>
-          <h1 style={{ fontSize: '36px', fontWeight: 800, margin: 0, letterSpacing: '-0.02em', color: '#ffffff' }}>
-            CyberNova SOC Platform
-          </h1>
-        </div>
         <p style={{ color: '#9ca3af', fontSize: '16px', maxWidth: '500px', margin: '0 auto' }}>
           Autonomous AI-Driven Cybersecurity Operations &amp; Threat Containment System
         </p>
