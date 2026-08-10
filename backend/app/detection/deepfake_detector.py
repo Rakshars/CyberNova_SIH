@@ -23,8 +23,14 @@ from app.detection.cf_model import ViTClassifier
 
 _face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
 
-_model = ViTClassifier.from_pretrained("OwensLab/commfor-model-384", device="cpu")
-_model.eval()
+_model = None
+
+def get_model():
+    global _model
+    if _model is None:
+        _model = ViTClassifier.from_pretrained("OwensLab/commfor-model-384", device="cpu")
+        _model.eval()
+    return _model
 
 # Matches the authors' dataloader.py get_transform(mode="test")
 _preprocess = transforms.Compose([
@@ -63,6 +69,6 @@ def analyze_image_bytes(content: bytes) -> dict:
     pil_img = Image.open(io.BytesIO(content)).convert("RGB")
     x_tensor = _preprocess(pil_img).unsqueeze(0)
     with torch.no_grad():
-        score = torch.sigmoid(_model(x_tensor)).item()
+        score = torch.sigmoid(get_model()(x_tensor)).item()
 
     return {"fake_probability": score, "bbox": bbox}
