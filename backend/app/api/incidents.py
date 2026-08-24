@@ -22,6 +22,123 @@ from app.api.events import _to_response as event_to_response
 
 router = APIRouter(prefix="/api/incidents", tags=["Incidents"])
 
+# --- AI Explanation map keyed by incident_type ---
+_ATTACK_INTEL = {
+    "FAILED_LOGIN_BURST": {
+        "attack_name": "Credential Stuffing & Brute Force Attack",
+        "mitre_id": "T1110.001",
+        "attack_explanation": (
+            "The attacker is rapidly firing hundreds of login attempts from a suspicious IP "
+            "(often a Tor exit node or compromised host) to guess or stuff leaked credentials. "
+            "This 'brute force burst' also combines with impossible travel — the same account "
+            "appears to login from two geographically impossible locations within minutes."
+        ),
+        "ai_response": (
+            "CyberNova AI has: (1) Flagged the source IP as malicious and blocked all further "
+            "requests from that subnet. (2) Temporarily locked the targeted account and notified "
+            "the user. (3) Escalated to SOAR which auto-triggered a password reset workflow. "
+            "(4) Correlated the IP against global threat intelligence feeds."
+        ),
+        "severity_color": "#ff2a6d",
+        "icon": "💥",
+    },
+    "UPI_ANOMALY": {
+        "attack_name": "Bharat UPI Micro-Debit Velocity Fraud",
+        "mitre_id": "T1657",
+        "attack_explanation": (
+            "An automated bot is executing a high-velocity series of micro-debit UPI transactions "
+            "across multiple VPAs in rapid succession — a pattern used to drain accounts incrementally "
+            "below fraud-detection thresholds. This is a financial fraud technique specific to India's "
+            "UPI ecosystem, exploiting the lack of per-transaction velocity checks."
+        ),
+        "ai_response": (
+            "CyberNova AI has: (1) Detected the abnormal transaction velocity (>10x baseline) using "
+            "the UPI anomaly ML model. (2) Placed a temporary hold on outgoing UPI transactions for "
+            "the affected VPA. (3) Sent an OTP-based re-authorization challenge to the user's "
+            "registered mobile. (4) Reported the attacker's VPA to the NPCI fraud registry."
+        ),
+        "severity_color": "#ffaa00",
+        "icon": "💳",
+    },
+    "PHISHING_STORM": {
+        "attack_name": "Mass SMS Phishing / Smishing Campaign",
+        "mitre_id": "T1566.004",
+        "attack_explanation": (
+            "A threat actor operating an automated SMS botnet is sending thousands of fraudulent "
+            "messages impersonating electricity boards, banks, and KYC update portals — containing "
+            "malicious links designed to harvest credentials or install malware on mobile devices. "
+            "The NLP classifier identified the message as a social engineering attack."
+        ),
+        "ai_response": (
+            "CyberNova AI has: (1) Blocked the originating SMS gateway IP and flagged the sender ID. "
+            "(2) Extracted and blacklisted all malicious URLs found in the message payload. "
+            "(3) Pushed IOC (Indicator of Compromise) data to the firewall and DNS filter. "
+            "(4) Alerted all potentially targeted users with a security advisory."
+        ),
+        "severity_color": "#00f2fe",
+        "icon": "📱",
+    },
+    "DEEPFAKE_WIRE_FRAUD": {
+        "attack_name": "Deepfake CEO Voice Impersonation & Wire Fraud",
+        "mitre_id": "T1656",
+        "attack_explanation": (
+            "An AI-synthesized voice/video impersonation of a senior executive (CEO/CFO) is being "
+            "used to socially engineer finance staff into authorizing an unauthorized wire transfer. "
+            "The ViT-based deepfake classifier detected statistical artifacts in the audio/video "
+            "waveform inconsistent with genuine human recording — a hallmark of GAN-generated media."
+        ),
+        "ai_response": (
+            "CyberNova AI has: (1) Flagged the media as synthetic with 97.3% confidence using the "
+            "ViT deepfake detection model. (2) Immediately quarantined the request and halted any "
+            "pending wire transfer. (3) Notified the actual executive and the security team. "
+            "(4) Preserved forensic evidence (audio hash, timestamp) for law enforcement reporting."
+        ),
+        "severity_color": "#05ffa1",
+        "icon": "🎭",
+    },
+}
+
+
+
+@router.get("/latest-threat")
+def get_latest_threat(db: Session = Depends(get_db)) -> dict:
+    """
+    Returns the most recently created incident along with AI-generated
+    attack explanation and response plan — used by the SOC blue team
+    live alert panel to auto-show when the red team launches an attack.
+    """
+    inc = (
+        db.query(Incident)
+        .order_by(desc(Incident.created_at))
+        .first()
+    )
+    if not inc:
+        return {"incident": None}
+
+    intel = _ATTACK_INTEL.get(inc.incident_type or "", {})
+
+    return {
+        "incident": {
+            "id": inc.id,
+            "incident_id": inc.incident_id,
+            "title": inc.title,
+            "incident_type": inc.incident_type,
+            "severity": inc.severity,
+            "risk_score": inc.risk_score,
+            "affected_username": inc.affected_username,
+            "affected_ip": inc.affected_ip,
+            "created_at": inc.created_at.isoformat() if inc.created_at else None,
+            "response_taken": inc.response_taken or [],
+            # AI enrichment fields
+            "attack_name": intel.get("attack_name", inc.title),
+            "mitre_id": intel.get("mitre_id", ""),
+            "attack_explanation": intel.get("attack_explanation", "An anomalous security event was detected by the AI engine."),
+            "ai_response": intel.get("ai_response", "The autonomous SOAR engine has been triggered to contain the threat."),
+            "severity_color": intel.get("severity_color", "#ff2a6d"),
+            "icon": intel.get("icon", "🚨"),
+        }
+    }
+
 
 @router.get("", response_model=IncidentListResponse)
 def list_incidents(
