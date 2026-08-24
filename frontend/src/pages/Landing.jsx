@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom'
-import { Shield, Skull, ArrowRight } from 'lucide-react'
+import { Shield, Skull, BookOpen, ArrowRight } from 'lucide-react'
 
 export default function Landing() {
   const navigate = useNavigate()
@@ -44,7 +44,7 @@ export default function Landing() {
       </div>
 
       {/* Operation Environment Cards */}
-      <div style={{ display: 'flex', gap: '28px', flexWrap: 'wrap', justifyContent: 'center', maxWidth: '800px', width: '100%' }}>
+      <div style={{ display: 'flex', gap: '28px', flexWrap: 'wrap', justifyContent: 'center', maxWidth: '1200px', width: '100%' }}>
         
         {/* Blue Team Defender Card */}
         <div 
@@ -167,6 +167,68 @@ export default function Landing() {
             fontSize: '13px'
           }}>
             LAUNCH ATTACK SIMULATOR <ArrowRight size={16} />
+          </div>
+        </div>
+
+        {/* Cyber Knowledge Base Card */}
+        <div 
+          onClick={() => navigate('/knowledge')}
+          style={{
+            flex: '1 1 320px',
+            background: 'rgba(10, 5, 20, 0.85)',
+            border: '1px solid rgba(168, 85, 247, 0.35)',
+            borderRadius: '20px',
+            padding: '36px 28px',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            textAlign: 'center',
+            cursor: 'pointer',
+            transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+            boxShadow: '0 10px 40px rgba(168, 85, 247, 0.12)',
+            position: 'relative',
+            overflow: 'hidden'
+          }}
+          onMouseEnter={e => {
+            e.currentTarget.style.transform = 'translateY(-6px)'
+            e.currentTarget.style.borderColor = '#a855f7'
+            e.currentTarget.style.boxShadow = '0 20px 50px rgba(168, 85, 247, 0.25)'
+          }}
+          onMouseLeave={e => {
+            e.currentTarget.style.transform = 'translateY(0)'
+            e.currentTarget.style.borderColor = 'rgba(168, 85, 247, 0.35)'
+            e.currentTarget.style.boxShadow = '0 10px 40px rgba(168, 85, 247, 0.12)'
+          }}
+        >
+          <div style={{
+            width: '74px',
+            height: '74px',
+            borderRadius: '20px',
+            background: 'rgba(168, 85, 247, 0.12)',
+            color: '#a855f7',
+            border: '1px solid rgba(168, 85, 247, 0.3)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            marginBottom: '20px',
+            boxShadow: '0 0 20px rgba(168, 85, 247, 0.2)'
+          }}>
+            <BookOpen size={36} />
+          </div>
+          <h2 style={{ fontSize: '22px', fontWeight: 800, color: '#ffffff', marginBottom: '8px' }}>Knowledge Base</h2>
+          <p style={{ color: '#9ca3af', fontSize: '13px', lineHeight: '1.6', marginBottom: '24px' }}>
+            Explore cybersecurity concepts, attacks, vulnerabilities, defenses, and threat intelligence encyclopedias.
+          </p>
+          <div style={{
+            marginTop: 'auto',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            color: '#a855f7',
+            fontWeight: 800,
+            fontSize: '13px'
+          }}>
+            EXPLORE KNOWLEDGE BASE <ArrowRight size={16} />
           </div>
         </div>
 

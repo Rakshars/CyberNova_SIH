@@ -12,6 +12,11 @@ import SoarRules from './pages/SoarRules'
 import Simulator from './pages/Simulator'
 import Landing from './pages/Landing'
 import Auth from './pages/Auth'
+import KnowledgeLayout from './components/KnowledgeLayout'
+import KnowledgeLanding from './pages/knowledge/KnowledgeLanding'
+import KnowledgeSearch from './pages/knowledge/KnowledgeSearch'
+import KnowledgeTopic from './pages/knowledge/KnowledgeTopic'
+import KnowledgeCategory from './pages/knowledge/KnowledgeCategory'
 
 export default function App() {
   return (
@@ -34,6 +39,13 @@ export default function App() {
 
         <Route path="/attacker" element={<AttackerLayout />}>
           <Route index element={<Simulator />} />
+        </Route>
+
+        <Route path="/knowledge" element={<KnowledgeLayout />}>
+          <Route index element={<KnowledgeLanding />} />
+          <Route path="search" element={<KnowledgeSearch />} />
+          <Route path="topic/:slug" element={<KnowledgeTopic />} />
+          <Route path="category/:category" element={<KnowledgeCategory />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/soc" replace />} />

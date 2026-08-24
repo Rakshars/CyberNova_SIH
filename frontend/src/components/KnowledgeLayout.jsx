@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import CopilotDrawer from './CopilotDrawer'
 import CyberLoadingScreen from './CyberLoadingScreen'
-import { User, LogIn, LogOut, UserPlus, Home } from 'lucide-react'
+import { User, LogIn, LogOut, Home } from 'lucide-react'
 
 const NAV = [
   {
@@ -78,17 +78,7 @@ const NAV = [
   },
 ]
 
-const PAGE_TITLES = {
-  '/': 'Overview Dashboard',
-  '/incidents': 'Security Incidents',
-  '/events': 'Real-Time Event Stream',
-  '/multimodal': 'Multi-Modal Security Hub',
-  '/soar': 'SOAR & Autonomous Playbooks',
-  '/users': 'User Behavioral Profiles',
-  '/knowledge': 'Cyber Knowledge Base',
-}
-
-export default function SocLayout() {
+export default function KnowledgeLayout() {
   const location = useLocation()
   const navigate = useNavigate()
   const [copilotOpen, setCopilotOpen] = useState(false)
@@ -123,10 +113,10 @@ export default function SocLayout() {
   }
 
   const pageTitle = (() => {
-    if (location.pathname.startsWith('/soc/incidents/')) return 'Incident Investigation'
-    if (location.pathname.startsWith('/soc/users/')) return 'User Behavioral Profile'
-    const trimmed = location.pathname.replace('/soc', '') || '/'
-    return PAGE_TITLES[trimmed] || 'SOC Command'
+    if (location.pathname.startsWith('/knowledge/topic/')) return 'Knowledge Base Article'
+    if (location.pathname.startsWith('/knowledge/category/')) return 'Knowledge Base Category'
+    if (location.pathname.startsWith('/knowledge/search')) return 'Knowledge Base Search'
+    return 'Cyber Knowledge Base'
   })()
 
   return (
@@ -253,7 +243,7 @@ export default function SocLayout() {
             <span className="topbar-title">{pageTitle}</span>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-              {/* Authenticated User Indicator Badge with Logout Button */}
+              {/* Authenticated User Indicator Badge */}
               {currentUser ? (
                 <div
                   style={{
