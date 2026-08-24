@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import CopilotDrawer from './CopilotDrawer'
 import CyberLoadingScreen from './CyberLoadingScreen'
+import LiveThreatAlert from './LiveThreatAlert'
 import { User, LogIn, LogOut, UserPlus, Home } from 'lucide-react'
 
 const NAV = [
@@ -132,6 +133,8 @@ export default function SocLayout() {
   return (
     <>
       {isLoading && <CyberLoadingScreen onFinished={() => setIsLoading(false)} />}
+      {/* Global live red-team threat alert — polls backend, pops up on all SOC pages */}
+      <LiveThreatAlert />
 
       <div className="layout">
         <aside className="sidebar">

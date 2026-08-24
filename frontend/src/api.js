@@ -39,7 +39,9 @@ export const getIncidents = (params = {}) => {
   return get('/incidents' + (q ? '?' + q : ''));
 };
 export const getIncident       = (id)     => get(`/incidents/${id}`);
+export const getLatestThreat   = ()        => get('/incidents/latest-threat');
 export const getIncidentTimeline = (id)   => get(`/incidents/${id}/timeline`);
+
 export const submitFeedback    = (id, body) => post(`/incidents/${id}/feedback`, body);
 
 /* Events */
