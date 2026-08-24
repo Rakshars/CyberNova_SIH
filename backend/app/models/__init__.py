@@ -8,3 +8,5 @@ from app.models.risk_score import RiskScoreHistory         # noqa: F401
 from app.models.response_action import ResponseAction      # noqa: F401
 from app.models.audit_log import AuditLog                  # noqa: F401
 from app.models.soar_policy import SOARPolicy                  # noqa: F401
+from app.models.knowledge import Category, Tag, MitreTechnique, Reference, Article  # noqa: F401
+
