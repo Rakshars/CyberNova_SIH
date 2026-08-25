@@ -107,27 +107,39 @@ export default function SoarRules() {
                 <th>Target Asset</th>
                 <th>Action Executed</th>
                 <th>Status</th>
+                <th>AI Reasoning</th>
               </tr>
             </thead>
             <tbody>
               {logs.length === 0 ? (
                 <tr>
-                  <td colSpan={5} style={{ textAlign: 'center', color: 'var(--text-muted)' }}>No execution logs yet. Trigger a Red Team simulation to test SOAR execution.</td>
+                  <td colSpan={6} style={{ textAlign: 'center', color: 'var(--text-muted)' }}>No execution logs yet. Trigger a Red Team simulation to test SOAR execution.</td>
                 </tr>
               ) : (
-                logs.map((log) => (
-                  <tr key={log.id}>
-                    <td className="td-mono">{new Date(log.timestamp).toLocaleTimeString()}</td>
-                    <td style={{ fontWeight: 500 }}>{log.policy_name}</td>
-                    <td className="td-mono">{log.target}</td>
-                    <td>
-                      <span className="badge badge-critical">{log.action_type}</span>
-                    </td>
-                    <td>
-                      <span className="badge badge-low">⚡ Auto Executed ({log.status})</span>
-                    </td>
-                  </tr>
-                ))
+                logs.map((log) => {
+                  const aiTriaged = (log.reason || '').includes('AI triage')
+                  const statusBadge = {
+                    executed: { label: '⚡ Auto Executed', cls: 'badge-low' },
+                    pending: aiTriaged
+                      ? { label: '⏸ Escalated by AI', cls: 'badge-medium' }
+                      : { label: '⏸ Pending Review', cls: 'badge-medium' },
+                    suppressed: { label: '✕ Suppressed by AI', cls: 'badge-info' },
+                  }[log.status] || { label: log.status, cls: 'badge-info' }
+                  return (
+                    <tr key={log.id}>
+                      <td className="td-mono">{new Date(log.timestamp).toLocaleTimeString()}</td>
+                      <td style={{ fontWeight: 500 }}>{log.policy_name}</td>
+                      <td className="td-mono">{log.target}</td>
+                      <td>
+                        <span className="badge badge-critical">{log.action_type}</span>
+                      </td>
+                      <td>
+                        <span className={`badge ${statusBadge.cls}`}>{statusBadge.label}</span>
+                      </td>
+                      <td style={{ fontSize: '12px', color: 'var(--text-sub)', maxWidth: '320px' }}>{log.reason || '—'}</td>
+                    </tr>
+                  )
+                })
               )}
             </tbody>
           </table>

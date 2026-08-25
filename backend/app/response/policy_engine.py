@@ -303,6 +303,32 @@ class SOARPolicyEngine:
                 reason_val = f"Triggered by policy '{p.name}': Risk Score {risk_score}, Event '{event_type}'"
                 now_str = datetime.utcnow().isoformat() + "Z"
 
+                # AI second opinion: the static auto_execute flag above is the
+                # fail-safe default, used as-is if this call errors or the key
+                # is missing. When available, the model can additionally
+                # escalate an ambiguous match to a human or suppress a
+                # likely false positive instead of blindly auto-executing.
+                try:
+                    from app.response.ai_decision_engine import decide_action
+                    ai_decision = decide_action(
+                        incident,
+                        {"name": p.name, "action_type": p.action_type, "description": p.description},
+                    )
+                except Exception as ex:
+                    logger.error(f"AI decision layer error: {ex}")
+                    ai_decision = None
+
+                if ai_decision is not None:
+                    if ai_decision.decision == "suppress":
+                        status_val = "suppressed"
+                    elif ai_decision.decision == "escalate":
+                        status_val = "pending"
+                    else:
+                        status_val = "executed" if p.auto_execute else "pending"
+                    reason_val = (
+                        f"{reason_val}. AI triage (confidence {ai_decision.confidence:.0%}): {ai_decision.reasoning}"
+                    )
+
                 action = {
                     "id": action_id,
                     "policy_id": p.id,
