@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import ReactMarkdown from 'react-markdown'
 import { queryCopilot } from '../api'
 
 export default function CopilotDrawer({ isOpen, onClose }) {
@@ -97,10 +98,9 @@ export default function CopilotDrawer({ isOpen, onClose }) {
             borderRadius: m.sender === 'user' ? '12px 12px 2px 12px' : '12px 12px 12px 2px',
             fontSize: '13px',
             lineHeight: '1.5',
-            whiteSpace: 'pre-line',
             border: m.sender === 'user' ? '1px solid var(--accent)' : '1px solid var(--border-sub)'
           }}>
-            {m.text}
+            {m.sender === 'user' ? m.text : <ReactMarkdown>{m.text}</ReactMarkdown>}
 
             {/* Suggested Chip Actions */}
             {m.actions && m.actions.length > 0 && (
