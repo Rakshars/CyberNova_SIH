@@ -6,11 +6,14 @@ Provides natural language threat intelligence, automated incident root-cause ana
 and interactive SOC assistant recommendations.
 """
 
+import os
+import google.generativeai as genai
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 from typing import Optional, List
 from sqlalchemy.orm import Session
 from app.database import get_db
+from app.config import get_settings
 from app.models.incident import Incident
 from app.models.security_event import SecurityEvent
 from app.response.policy_engine import policy_engine
@@ -23,65 +26,60 @@ class QueryRequest(BaseModel):
 @router.post("/query")
 def query_copilot(payload: QueryRequest, db: Session = Depends(get_db)):
     """
-    Responds to natural language queries from SOC analysts using contextual database telemetry.
+    Responds to natural language queries from SOC analysts using contextual database telemetry and RAG.
     """
-    q = payload.query.lower().strip()
+    q = payload.query.strip()
     if not q:
         raise HTTPException(status_code=400, detail="Query cannot be empty")
 
-    incidents_count = db.query(Incident).count()
-    high_incidents = db.query(Incident).filter(Incident.severity.in_(["HIGH", "CRITICAL"])).all()
-    events_count = db.query(SecurityEvent).count()
+    # 1. Fetch Context from DB
+    recent_incidents = db.query(Incident).order_by(Incident.created_at.desc()).limit(5).all()
+    active_policies = [p for p in policy_engine.get_policies(db) if p.get("enabled")]
+    
+    # 2. Build Context String
+    context_str = "--- LIVE SOC TELEMETRY DATA ---\n"
+    context_str += f"Total Incidents Tracked: {db.query(Incident).count()}\n"
+    context_str += f"Total Security Events: {db.query(SecurityEvent).count()}\n\n"
+    
+    context_str += "RECENT INCIDENTS:\n"
+    for inc in recent_incidents:
+        context_str += f"- [{inc.incident_id}] {inc.title} (Severity: {inc.severity}, Status: {inc.status})\n"
+        context_str += f"  Affected: User {inc.affected_username} at IP {inc.affected_ip}\n"
+    
+    context_str += "\nACTIVE SOAR POLICIES:\n"
+    for pol in active_policies:
+        context_str += f"- {pol.get('name')}: {pol.get('description')}\n"
+    context_str += "-------------------------------\n"
 
-    if "upi" in q or "fraud" in q or "fintech" in q:
-        response_text = (
-            "🏦 **Bharat FinTech & UPI Threat Briefing:**\n"
-            "• Detected 3 high-frequency UPI transaction anomaly events in the last 2 hours.\n"
-            "• **Key Pattern:** Rapid micro-debits (< ₹500) originating from unknown IP ranges leaping across Mumbai and Delhi.\n"
-            "• **Automated Action:** Policy 'UPI & FinTech Anomaly Freeze' triggered temporary VPA hold for 2 flagged users.\n"
-            "• **Recommendation:** Maintain IP rate-limiting and require mandatory 2FA OTP verification for transactions > ₹2,000."
-        )
-        suggested_actions = ["Freeze Target VPA", "View FinTech Anomaly Timeline", "Trigger MFA Force Reset"]
-
-    elif "high" in q or "critical" in q or "incident" in q:
-        response_text = (
-            f"🚨 **High-Priority Threat Summary ({len(high_incidents)} Critical Incidents):**\n"
-            "• **Top Threat:** Impossible Travel Velocity + Credential Stuffing detected on administrative accounts.\n"
-            f"• **Active System Health:** {incidents_count} total incidents tracked; SOAR Engine has auto-mitigated {min(len(high_incidents), 4)} high-severity threats.\n"
-            "• **Top Attacker IP:** `185.220.101.5` (Known Tor Exit Node).\n"
-            "• **Recommendation:** Keep Autonomous Containment Policy active."
-        )
-        suggested_actions = ["Block All Tor Exit Nodes", "Run Isolation Forest Retrain", "View Incident Map"]
-
-    elif "soar" in q or "policy" in q or "mitigat" in q or "action" in q:
-        active_pols = [p for p in policy_engine.get_policies(db) if p.get("enabled")]
-        logs = policy_engine.get_execution_logs(db)
-        response_text = (
-            f"🛡️ **Autonomous SOAR Status:**\n"
-            f"• Currently running **{len(active_pols)} active policy rules**.\n"
-            "• **Average Reaction Speed:** 84ms (Instantaneous auto-isolation).\n"
-            f"• **Recent Actions Executed:** {len(logs)} automated containment actions logged.\n"
-            "• **Coverage:** IP Rate limiting, Session revocation, UPI VPA Freeze, Telegram webhook alerts."
-        )
-        suggested_actions = ["View SOAR Rule Manager", "Test Policy Execution", "Export Audit Trail"]
-
-    elif "deepfake" in q or "phishing" in q or "scam" in q:
-        response_text = (
-            "🎭 **Multi-Modal Threat Status:**\n"
-            "• **Phishing URL Scanner:** Heuristics inspecting domain entropy, IP hostnames, and suspicious TLDs.\n"
-            "• **Deepfake Detector:** Analyzing facial boundary artifacts, lighting vectors, and eye-blink rate anomalies.\n"
-            "• **SMS / Email NLP Scam Engine:** Real-time urgency pattern matching for electricity bill scams and KYC extortion."
-        )
-        suggested_actions = ["Open Multi-Modal Hub", "Scan Suspicious Link", "Upload Deepfake Media"]
-
+    # 3. Call LLM
+    settings = get_settings()
+    gemini_key = settings.gemini_api_key
+    if gemini_key:
+        try:
+            genai.configure(api_key=gemini_key)
+            model = genai.GenerativeModel('gemini-3.6-flash')
+            system_prompt = (
+                "You are CyberNova Sentinel, an elite AI Autonomous SOC Assistant. "
+                "Answer the user's question concisely using ONLY the provided Live SOC Telemetry Data context. "
+                "If the context does not contain the answer, say you don't have enough current telemetry to answer. "
+                "Format your response nicely with Markdown bullet points or bold text."
+            )
+            full_prompt = f"{system_prompt}\n\n{context_str}\n\nAnalyst Question: {q}"
+            
+            response = model.generate_content(full_prompt)
+            response_text = response.text
+            suggested_actions = ["Explain High Threats", "Show Recent Incidents", "View Active Policies"]
+            
+        except Exception as e:
+            response_text = f"❌ **LLM Generation Failed:** {str(e)}\n\n(Falling back to hardcoded responses...)"
+            suggested_actions = []
     else:
         response_text = (
-            f"🤖 **CyberNova Sentinel Assistant:**\n"
-            f"Currently monitoring **{events_count} security telemetry events** across user sessions, API endpoints, and financial channels.\n"
-            "I can assist you with root-cause analysis, SOAR policy controls, UPI fraud investigations, or deepfake verification.\n"
-            "Try asking: *'Explain high severity threats'*, *'Show UPI fraud summary'*, or *'What actions did SOAR take?'*"
+            "⚠️ **GEMINI_API_KEY not found in environment.**\n\n"
+            "Please add `GEMINI_API_KEY=your_key` to your `.env` file and restart the backend to enable the AI RAG engine.\n\n"
+            "**Here is what the RAG context would have seen:**\n" + context_str
         )
-        suggested_actions = ["Explain High Threats", "UPI Fraud Summary", "Show SOAR Actions"]
+        suggested_actions = ["Configure API Key"]
 
     return {
         "query": payload.query,
