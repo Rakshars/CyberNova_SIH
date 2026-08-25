@@ -5,7 +5,8 @@ import { SeverityBadge, StatusBadge, AnomalyBadge } from '../components/Badge'
 
 function fmt(dt) {
   if (!dt) return '—'
-  return new Date(dt).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })
+  const utc = dt.endsWith('Z') ? dt : dt + 'Z'
+  return new Date(utc).toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })
 }
 
 function Kv({ k, v }) {

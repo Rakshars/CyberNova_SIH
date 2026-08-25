@@ -6,7 +6,8 @@ const PAGE_SIZE = 50
 
 function fmt(dt) {
   if (!dt) return '—'
-  return new Date(dt).toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' })
+  const utc = dt.endsWith('Z') ? dt : dt + 'Z'
+  return new Date(utc).toLocaleString(undefined, { dateStyle: 'short', timeStyle: 'short' })
 }
 
 export default function Events() {
