@@ -29,7 +29,8 @@ async function patch(path, body) {
 }
 
 /* Dashboard */
-export const getDashboardSummary = () => get('/dashboard/summary');
+export const getDashboardSummary    = () => get('/dashboard/summary');
+export const getDashboardLivePanels = () => get('/dashboard/live-panels');
 
 /* Incidents */
 export const getIncidents = (params = {}) => {

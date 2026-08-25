@@ -127,7 +127,7 @@ export default function SoarRules() {
                   }[log.status] || { label: log.status, cls: 'badge-info' }
                   return (
                     <tr key={log.id}>
-                      <td className="td-mono">{new Date(log.timestamp).toLocaleTimeString()}</td>
+                      <td className="td-mono">{new Date(log.timestamp.endsWith('Z') ? log.timestamp : log.timestamp + 'Z').toLocaleTimeString()}</td>
                       <td style={{ fontWeight: 500 }}>{log.policy_name}</td>
                       <td className="td-mono">{log.target}</td>
                       <td>

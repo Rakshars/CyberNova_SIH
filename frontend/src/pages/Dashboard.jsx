@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { getDashboardSummary, getIncidents, triggerRedTeamAttack } from '../api'
+import { getDashboardSummary, getDashboardLivePanels, getIncidents, triggerRedTeamAttack } from '../api'
 import StatCard from '../components/StatCard'
 import HealthRing from '../components/HealthRing'
 import { SeverityBadge, StatusBadge } from '../components/Badge'
@@ -27,6 +27,7 @@ function SevBar({ label, count, max, color }) {
 
 export default function Dashboard() {
   const [summary, setSummary] = useState(null)
+  const [livePanels, setLivePanels] = useState(null)
   const [recentIncidents, setRecentIncidents] = useState([])
   const [loading, setLoading] = useState(true)
   const [attackToast, setAttackToast] = useState(null)
@@ -37,10 +38,12 @@ export default function Dashboard() {
   const refreshData = () => {
     Promise.all([
       getDashboardSummary(),
+      getDashboardLivePanels(),
       getIncidents({ page: 1, page_size: 5 }),
     ])
-      .then(([s, i]) => {
+      .then(([s, panels, i]) => {
         setSummary(s)
+        setLivePanels(panels)
         setRecentIncidents(i.items)
       })
       .finally(() => setLoading(false))
@@ -48,6 +51,9 @@ export default function Dashboard() {
 
   useEffect(() => {
     refreshData()
+    // Auto-refresh every 15 seconds for live data
+    const interval = setInterval(refreshData, 15000)
+    return () => clearInterval(interval)
   }, [])
 
   const handleLaunchAttack = async (type) => {
@@ -163,14 +169,22 @@ export default function Dashboard() {
                 <span>UPI VPA Micro-Debit Velocity</span>
                 <span className="badge badge-low">⚡ Auto Shield</span>
               </div>
-              <p style={{ color: 'var(--text-sub)', fontSize: '12px', marginTop: 4 }}>Monitoring rapid sequential transaction anomalies across UPIVPAs.</p>
+              <p style={{ color: 'var(--text-sub)', fontSize: '12px', marginTop: 4 }}>
+                {livePanels
+                  ? `${livePanels.upi_total_events} UPI events monitored · ${livePanels.upi_anomaly_count} anomalies flagged · ${livePanels.upi_blocked_count} VPAs blocked`
+                  : 'Monitoring rapid sequential transaction anomalies across UPIVPAs.'}
+              </p>
             </div>
             <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border-sub)', padding: '12px 14px', borderRadius: '8px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 700, fontSize: '13px' }}>
                 <span>Electricity & Bank SMS Extortion Filter</span>
                 <span className="badge badge-info">NLP Active</span>
               </div>
-              <p style={{ color: 'var(--text-sub)', fontSize: '12px', marginTop: 4 }}>Real-time NLP scanning for fake KYC / power disconnection scam links.</p>
+              <p style={{ color: 'var(--text-sub)', fontSize: '12px', marginTop: 4 }}>
+                {livePanels
+                  ? `${livePanels.nlp_scan_count} messages scanned · ${livePanels.nlp_blocked_count} phishing domains quarantined`
+                  : 'Real-time NLP scanning for fake KYC / power disconnection scam links.'}
+              </p>
             </div>
           </div>
         </div>
@@ -179,22 +193,38 @@ export default function Dashboard() {
         <div className="card">
           <div className="section-title">🔍 Explainable AI (XAI) Risk Model</div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginTop: 10, fontSize: '12px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ color: 'var(--text-sub)' }}>Impossible Travel Speed</span>
-              <span className="badge badge-critical">+38 Points</span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ color: 'var(--text-sub)' }}>Failed Password Burst</span>
-              <span className="badge badge-high">+26 Points</span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ color: 'var(--text-sub)' }}>UPI Transaction Deviation</span>
-              <span className="badge badge-high">+20 Points</span>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ color: 'var(--text-sub)' }}>Unusual Tor / ASN IP</span>
-              <span className="badge badge-medium">+16 Points</span>
-            </div>
+            {livePanels && livePanels.xai_risk_factors.length > 0
+              ? livePanels.xai_risk_factors.map((factor, idx) => {
+                  const badgeClass = factor.points >= 30 ? 'badge-critical' : factor.points >= 20 ? 'badge-high' : 'badge-medium'
+                  return (
+                    <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ color: 'var(--text-sub)' }}>{factor.reason}</span>
+                      <span className={`badge ${badgeClass}`}>+{factor.points} Points</span>
+                    </div>
+                  )
+                })
+              : (
+                // Fallback to static labels while live data loads
+                <>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ color: 'var(--text-sub)' }}>Impossible Travel Speed</span>
+                    <span className="badge badge-critical">+38 Points</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ color: 'var(--text-sub)' }}>Failed Password Burst</span>
+                    <span className="badge badge-high">+26 Points</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ color: 'var(--text-sub)' }}>UPI Transaction Deviation</span>
+                    <span className="badge badge-high">+20 Points</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ color: 'var(--text-sub)' }}>Unusual Tor / ASN IP</span>
+                    <span className="badge badge-medium">+16 Points</span>
+                  </div>
+                </>
+              )
+            }
           </div>
         </div>
       </div>
