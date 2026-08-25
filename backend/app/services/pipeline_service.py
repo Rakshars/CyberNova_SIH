@@ -76,7 +76,7 @@ def run_batch_pipeline(events: list[dict], db: Session) -> dict:
         db_event = _dict_to_security_event(event_dict)
         db.add(db_event)
         db.flush()
-        if (db_event.risk_score or 0) >= 40:
+        if (db_event.risk_score or 0) >= 20:
             create_incident_from_event(db_event, db)
             incidents_created += 1
         inserted += 1
@@ -138,7 +138,7 @@ def process_single_event(event: dict, db: Session, baselines: dict | None = None
     db.flush()
 
     # Create incident if high risk
-    if (db_event.risk_score or 0) >= 40:
+    if (db_event.risk_score or 0) >= 20:
         from app.correlation.correlator import create_incident_from_event
         create_incident_from_event(db_event, db)
 

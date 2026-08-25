@@ -131,8 +131,12 @@ def engineer_single_event(
     event["day_of_week"] = ts.dayofweek
     event["is_night"] = 1 if 0 <= hour <= 4 else 0
     event["failed_login"] = 1 if event.get("login_status") == "Failed" else 0
-    event["unusual_country"] = 0 if event.get("country") == baseline.get("baseline_country") else 1
-    event["unusual_device"] = 0 if event.get("device") == baseline.get("baseline_device") else 1
+    baseline_country = baseline.get("baseline_country")
+    baseline_device  = baseline.get("baseline_device")
+    # Only flag as unusual if a known baseline exists to compare against.
+    # New users with no history should not be penalised.
+    event["unusual_country"] = 1 if (baseline_country is not None and event.get("country") != baseline_country) else 0
+    event["unusual_device"]  = 1 if (baseline_device  is not None and event.get("device")  != baseline_device)  else 0
     event["ip_recent_failures"] = recent_failure_count
 
     return event
