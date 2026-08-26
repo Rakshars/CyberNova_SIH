@@ -27,7 +27,7 @@ export default function KnowledgeCategory() {
       const cat = await getKnowledgeCategory(category)
       setCategoryDetails(cat)
       const arts = await getKnowledgeArticles({ category: cat.name })
-      setRawArticles(arts)
+      setRawArticles(arts.items || arts)
       setError(null)
     } catch (err) {
       console.error("Error loading category data:", err)

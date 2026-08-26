@@ -32,7 +32,7 @@ export default function KnowledgeTopic() {
         getKnowledgeArticles()
       ])
       setArticle(art)
-      setAllArticles(arts)
+      setAllArticles(arts.items || arts)
       setError(null)
     } catch (err) {
       console.error("Error loading article data:", err)

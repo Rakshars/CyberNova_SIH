@@ -37,7 +37,7 @@ export default function KnowledgeLanding() {
         getKnowledgeArticles()
       ])
       setCategories(cats)
-      setArticles(arts)
+      setArticles(arts.items || arts)
       setError(null)
     } catch (err) {
       console.error("Error loading knowledge landing data:", err)

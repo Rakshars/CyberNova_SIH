@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Outlet, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import CopilotDrawer from './CopilotDrawer'
 import CyberLoadingScreen from './CyberLoadingScreen'
-import { User, LogIn, LogOut, Home } from 'lucide-react'
+import { User, LogIn, LogOut, Home, Menu, X } from 'lucide-react'
 
 const NAV = [
   {
@@ -84,6 +84,7 @@ export default function KnowledgeLayout() {
   const [copilotOpen, setCopilotOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [currentUser, setCurrentUser] = useState(null)
+  const [sidebarOpen, setSidebarOpen] = useState(false)
 
   useEffect(() => {
     loadSavedUser()
@@ -91,6 +92,23 @@ export default function KnowledgeLayout() {
     window.addEventListener('cybernova_auth_change', handleAuthChange)
     return () => window.removeEventListener('cybernova_auth_change', handleAuthChange)
   }, [])
+
+  // Close sidebar on route changes
+  useEffect(() => {
+    setSidebarOpen(false)
+  }, [location.pathname])
+
+  // Scroll lock when mobile sidebar is open
+  useEffect(() => {
+    if (sidebarOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [sidebarOpen])
 
   const loadSavedUser = () => {
     const raw = localStorage.getItem('cybernova_user')
@@ -123,8 +141,25 @@ export default function KnowledgeLayout() {
     <>
       {isLoading && <CyberLoadingScreen onFinished={() => setIsLoading(false)} />}
 
-      <div className="layout">
-        <aside className="sidebar">
+      <div className="layout kb-layout">
+        {sidebarOpen && (
+          <div 
+            className="sidebar-overlay" 
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
+
+        <aside className={`sidebar kb-sidebar ${sidebarOpen ? 'mobile-open' : ''}`}>
+          <div className="sidebar-mobile-header">
+            <button 
+              className="sidebar-close-btn" 
+              onClick={() => setSidebarOpen(false)}
+              aria-label="Close menu"
+            >
+              <X size={20} />
+            </button>
+          </div>
+
           <div className="sidebar-logo">
             <div className="logo-icon" style={{ background: 'transparent', boxShadow: 'none', padding: 0, overflow: 'hidden' }}>
               <img src="/logo.png" alt="CyberNova SOC Logo" style={{ width: '34px', height: '34px', objectFit: 'contain', borderRadius: '8px' }} />
@@ -240,12 +275,20 @@ export default function KnowledgeLayout() {
 
         <div className="main">
           <header className="topbar">
+            <button 
+              className="mobile-menu-btn" 
+              onClick={() => setSidebarOpen(true)}
+              aria-label="Open menu"
+            >
+              <Menu size={20} />
+            </button>
             <span className="topbar-title">{pageTitle}</span>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
               {/* Authenticated User Indicator Badge */}
               {currentUser ? (
                 <div
+                  className="topbar-user-badge"
                   style={{
                     display: 'flex',
                     alignItems: 'center',
@@ -310,7 +353,7 @@ export default function KnowledgeLayout() {
 
               <div className="topbar-status">
                 <span className="status-dot" />
-                Autonomous Active
+                <span className="status-text">Autonomous Active</span>
               </div>
             </div>
           </header>
