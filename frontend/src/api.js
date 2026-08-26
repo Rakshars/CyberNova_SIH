@@ -83,3 +83,15 @@ export const getSoarLogs = () => get('/soar/logs');
 /* AI SOC Co-Pilot (CyberNova Sentinel) */
 export const queryCopilot = (query) => post('/copilot/query', { query });
 export const investigateWithCopilot = (incidentId) => get(`/copilot/investigate/${incidentId}`);
+
+/* Cyber Knowledge Base */
+export const getKnowledgeCategories = () => get('/knowledge/categories');
+export const getKnowledgeCategory = (slug) => get(`/knowledge/category/${slug}`);
+export const getKnowledgeArticles = (params = {}) => {
+  const qs = new URLSearchParams();
+  Object.entries(params).forEach(([k, v]) => { if (v !== '' && v !== null && v !== undefined) qs.set(k, v); });
+  const q = qs.toString();
+  return get('/knowledge/articles' + (q ? '?' + q : ''));
+};
+export const getKnowledgeArticle = (slug) => get(`/knowledge/article/${slug}`);
+

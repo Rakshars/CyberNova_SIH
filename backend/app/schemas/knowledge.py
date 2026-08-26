@@ -49,4 +49,6 @@ class ArticleResponse(BaseModel):
     relatedTopics: list[str] = Field(..., serialization_alias="relatedTopics")
     references: list[str]
 
+    relevanceScore: Optional[int] = Field(default=None, serialization_alias="relevanceScore")
+
     model_config = {"from_attributes": True, "populate_by_name": True}

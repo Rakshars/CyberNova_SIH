@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { Search, BookOpen, ShieldAlert, Bug, AlertTriangle, ShieldCheck, Network, Cpu, ArrowRight } from 'lucide-react'
-import { categoriesList, articles } from '../../data/mockKnowledge'
+import { Search, BookOpen, ShieldAlert, Bug, AlertTriangle, ShieldCheck, Network, Cpu, ArrowRight, AlertCircle, RefreshCw } from 'lucide-react'
+import { getKnowledgeCategories, getKnowledgeArticles } from '../../api'
 
 const CATEGORY_ICONS = {
   "attacks-threats": <ShieldAlert size={24} className="category-icon-style" style={{ color: 'var(--critical)' }} />,
@@ -12,9 +12,44 @@ const CATEGORY_ICONS = {
   "mitre-attack": <Cpu size={24} className="category-icon-style" style={{ color: '#a855f7' }} />
 }
 
+const CATEGORY_EXAMPLES = {
+  "attacks-threats": ["Phishing", "Ransomware", "Credential Stuffing", "DDoS"],
+  "malware": ["Trojan", "Worm", "RAT", "Rootkit"],
+  "vulnerabilities": ["SQL Injection", "XSS", "Buffer Overflow"],
+  "defense-security": ["SIEM", "EDR", "IDS/IPS", "Firewall", "Zero Trust"],
+  "networking": ["DNS", "HTTP/S", "TCP/IP", "VPN"],
+  "mitre-attack": ["Tactics", "Techniques", "Procedures"]
+}
+
 export default function KnowledgeLanding() {
   const [searchQuery, setSearchQuery] = useState('')
+  const [categories, setCategories] = useState([])
+  const [articles, setArticles] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
   const navigate = useNavigate()
+
+  const loadData = async () => {
+    try {
+      setLoading(true)
+      const [cats, arts] = await Promise.all([
+        getKnowledgeCategories(),
+        getKnowledgeArticles()
+      ])
+      setCategories(cats)
+      setArticles(arts)
+      setError(null)
+    } catch (err) {
+      console.error("Error loading knowledge landing data:", err)
+      setError("Failed to connect to the Cybersecurity Knowledge Base. Please verify the API server is running.")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    loadData()
+  }, [])
 
   const handleSearchSubmit = (e) => {
     e.preventDefault()
@@ -23,8 +58,7 @@ export default function KnowledgeLanding() {
 
   const featuredSlugs = ['ransomware', 'phishing', 'lateral-movement', 'command-and-control', 'zero-trust', 'edr']
   const featuredArticles = articles.filter(a => featuredSlugs.includes(a.slug))
-
-  const popularArticles = articles.slice(0, 10) // Show a list of popular articles
+  const popularArticles = articles.slice(0, 10)
 
   const getDifficultyBadgeClass = (diff) => {
     switch (diff?.toLowerCase()) {
@@ -34,6 +68,29 @@ export default function KnowledgeLanding() {
       default: return 'badge-neutral'
     }
   }
+
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '300px', gap: 16 }}>
+        <RefreshCw className="animate-spin" size={32} color="var(--accent)" />
+        <span style={{ color: 'var(--text-sub)', fontSize: '14px', fontWeight: 600 }}>Loading Knowledge Base...</span>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="card" style={{ maxWidth: '600px', margin: '40px auto', padding: 24, textAlign: 'center' }}>
+        <AlertCircle size={40} color="var(--critical)" style={{ margin: '0 auto 12px' }} />
+        <h3 style={{ color: '#fff', fontSize: '18px', fontWeight: 800, marginBottom: 8 }}>Database Connection Failure</h3>
+        <p style={{ color: 'var(--text-sub)', fontSize: '13.5px', marginBottom: 16 }}>{error}</p>
+        <button onClick={loadData} className="btn btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+          <RefreshCw size={14} /> Retry Connection
+        </button>
+      </div>
+    )
+  }
+
 
   return (
     <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
@@ -136,13 +193,14 @@ export default function KnowledgeLanding() {
           gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 320px), 1fr))',
           gap: 16
         }}>
-          {categoriesList.map(cat => {
+          {categories.map(cat => {
             const articleCount = articles.filter(a => a.category.toLowerCase() === cat.name.toLowerCase()).length;
+            const examples = CATEGORY_EXAMPLES[cat.slug] || [];
             return (
               <div 
                 key={cat.id} 
                 className="card"
-                onClick={() => navigate(`/knowledge/category/${cat.id}`)}
+                onClick={() => navigate(`/knowledge/category/${cat.slug}`)}
                 style={{
                   display: 'flex',
                   gap: 16,
@@ -161,7 +219,7 @@ export default function KnowledgeLanding() {
                   alignItems: 'center',
                   justifyContent: 'center'
                 }}>
-                  {CATEGORY_ICONS[cat.id]}
+                  {CATEGORY_ICONS[cat.slug] || <BookOpen size={24} className="category-icon-style" style={{ color: 'var(--accent)' }} />}
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
@@ -173,13 +231,15 @@ export default function KnowledgeLanding() {
                   <p style={{ color: 'var(--text-sub)', fontSize: '12px', marginTop: 4, lineHeight: '1.4' }}>
                     {cat.description}
                   </p>
-                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 10 }}>
-                    {cat.examples.map(ex => (
-                      <span key={ex} style={{ fontSize: '10px', color: 'var(--text-muted)', background: 'rgba(255,255,255,0.04)', padding: '2px 6px', borderRadius: '4px' }}>
-                        {ex}
-                      </span>
-                    ))}
-                  </div>
+                  {examples.length > 0 && (
+                    <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 10 }}>
+                      {examples.map(ex => (
+                        <span key={ex} style={{ fontSize: '10px', color: 'var(--text-muted)', background: 'rgba(255,255,255,0.04)', padding: '2px 6px', borderRadius: '4px' }}>
+                          {ex}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             );

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
-import { Search, Filter, AlertCircle, ArrowRight } from 'lucide-react'
-import { articles, categoriesList } from '../../data/mockKnowledge'
+import { Search, Filter, AlertCircle, ArrowRight, RefreshCw } from 'lucide-react'
+import { getKnowledgeCategories, getKnowledgeArticles } from '../../api'
 
 function useWindowWidth() {
   const [width, setWidth] = useState(window.innerWidth)
@@ -22,65 +22,50 @@ export default function KnowledgeSearch() {
   const [searchQuery, setSearchQuery] = useState(queryParam)
   const [selectedCategory, setSelectedCategory] = useState('All')
   const [selectedDifficulty, setSelectedDifficulty] = useState('All')
+  const [categories, setCategories] = useState([])
   const [results, setResults] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
   // Synchronize input box with URL parameter query on load/update
   useEffect(() => {
     setSearchQuery(queryParam)
   }, [queryParam])
 
-  // Filter logic runs against mock data
+  // Fetch categories on mount
   useEffect(() => {
-    let filtered = articles.map(art => {
-      // Calculate a basic relevance score based on match location
-      let score = 0
-      const q = queryParam.toLowerCase().trim()
-      
-      if (!q) {
-        score = 80 // Default base score if no text query
-      } else {
-        if (art.title.toLowerCase() === q) score += 100
-        else if (art.title.toLowerCase().includes(q)) score += 85
-        
-        art.tags.forEach(t => {
-          if (t.toLowerCase().includes(q)) score += 15
-        })
-
-        if (art.mitreId.toLowerCase().includes(q)) score += 40
-        if (art.summary.toLowerCase().includes(q)) score += 20
-        if (art.category.toLowerCase().includes(q)) score += 10
-        if (art.content.overview.toLowerCase().includes(q)) score += 5
+    async function loadCategories() {
+      try {
+        const cats = await getKnowledgeCategories()
+        setCategories(cats)
+      } catch (err) {
+        console.error("Error loading categories:", err)
       }
-
-      return { ...art, relevanceScore: Math.min(score, 100) }
-    })
-
-    // Filter by text search query if query exists
-    if (queryParam.trim() !== '') {
-      const q = queryParam.toLowerCase().trim()
-      filtered = filtered.filter(art => 
-        art.relevanceScore > 0 ||
-        art.title.toLowerCase().includes(q) ||
-        art.summary.toLowerCase().includes(q) ||
-        art.mitreId.toLowerCase().includes(q) ||
-        art.tags.some(t => t.toLowerCase().includes(q))
-      )
     }
+    loadCategories()
+  }, [])
 
-    // Filter by Category
-    if (selectedCategory !== 'All') {
-      filtered = filtered.filter(art => art.category.toLowerCase() === selectedCategory.toLowerCase())
+  // Fetch search results on search parameters update
+  const loadResults = async () => {
+    try {
+      setLoading(true)
+      const data = await getKnowledgeArticles({
+        q: queryParam,
+        category: selectedCategory,
+        difficulty: selectedDifficulty
+      })
+      setResults(data)
+      setError(null)
+    } catch (err) {
+      console.error("Error loading search results:", err)
+      setError("Failed to fetch topics from database server.")
+    } finally {
+      setLoading(false)
     }
+  }
 
-    // Filter by Difficulty
-    if (selectedDifficulty !== 'All') {
-      filtered = filtered.filter(art => art.difficulty.toLowerCase() === selectedDifficulty.toLowerCase())
-    }
-
-    // Sort by relevance score desc
-    filtered.sort((a, b) => b.relevanceScore - a.relevanceScore)
-
-    setResults(filtered)
+  useEffect(() => {
+    loadResults()
   }, [queryParam, selectedCategory, selectedDifficulty])
 
   const handleSearchSubmit = (e) => {
@@ -163,7 +148,7 @@ export default function KnowledgeSearch() {
                 />
                 All Categories
               </label>
-              {categoriesList.map(cat => (
+              {categories.map(cat => (
                 <label key={cat.id} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '13px', cursor: 'pointer', color: selectedCategory === cat.name ? '#fff' : 'var(--text-sub)' }}>
                   <input 
                     type="radio" 
@@ -218,7 +203,17 @@ export default function KnowledgeSearch() {
           </div>
 
           {/* Results Loop */}
-          {results.length > 0 ? (
+          {loading ? (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '60px 20px', gap: 12 }}>
+              <RefreshCw className="animate-spin" size={24} color="var(--accent)" />
+              <span style={{ fontSize: '13px', color: 'var(--text-sub)' }}>Searching cybersecurity topics...</span>
+            </div>
+          ) : error ? (
+            <div className="card" style={{ padding: '30px 20px', textAlign: 'center', border: '1px dashed var(--critical)' }}>
+              <AlertCircle size={28} color="var(--critical)" style={{ margin: '0 auto 8px' }} />
+              <p style={{ color: 'var(--text-sub)', fontSize: '13px', margin: 0 }}>{error}</p>
+            </div>
+          ) : results.length > 0 ? (
             results.map(art => (
               <div 
                 key={art.id} 

@@ -1,7 +1,7 @@
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useState, useEffect } from 'react'
-import { BookOpen, Calendar, HelpCircle, ShieldAlert, Cpu, Layers, ExternalLink, ArrowRight, ArrowDown } from 'lucide-react'
-import { articles, categoriesList } from '../../data/mockKnowledge'
+import { BookOpen, Calendar, HelpCircle, ShieldAlert, Cpu, Layers, ExternalLink, ArrowRight, ArrowDown, AlertCircle, RefreshCw } from 'lucide-react'
+import { getKnowledgeArticle, getKnowledgeArticles } from '../../api'
 
 function useWindowWidth() {
   const [width, setWidth] = useState(window.innerWidth)
@@ -19,32 +19,42 @@ export default function KnowledgeTopic() {
   const width = useWindowWidth()
   const isMobile = width < 768
 
-  // Find the article based on slug
-  const article = articles.find(a => a.slug === slug)
+  const [article, setArticle] = useState(null)
+  const [allArticles, setAllArticles] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
-  if (!article) {
-    return (
-      <div className="card" style={{ maxWidth: '600px', margin: '60px auto', padding: '40px 20px', textAlign: 'center' }}>
-        <HelpCircle size={48} color="var(--critical)" style={{ margin: '0 auto 16px' }} />
-        <h2 style={{ color: '#fff', fontSize: '20px', fontWeight: 800 }}>Article Not Found</h2>
-        <p style={{ color: 'var(--text-sub)', fontSize: '14px', marginTop: 8 }}>
-          The cybersecurity topic you are trying to view does not exist in our Knowledge Base or has been moved.
-        </p>
-        <Link to="/knowledge" className="btn btn-primary" style={{ marginTop: 20 }}>
-          Back to Knowledge Base Home
-        </Link>
-      </div>
-    )
+  const loadData = async () => {
+    try {
+      setLoading(true)
+      const [art, arts] = await Promise.all([
+        getKnowledgeArticle(slug),
+        getKnowledgeArticles()
+      ])
+      setArticle(art)
+      setAllArticles(arts)
+      setError(null)
+    } catch (err) {
+      console.error("Error loading article data:", err)
+      setError("The requested article was not found or the database connection failed.")
+    } finally {
+      setLoading(false)
+    }
   }
 
+  useEffect(() => {
+    loadData()
+  }, [slug])
+
   // Find corresponding category ID for breadcrumb routing
-  const categoryObject = categoriesList.find(c => c.name.toLowerCase() === article.category.toLowerCase())
-  const categoryId = categoryObject ? categoryObject.id : 'attacks-threats'
+  const categoryId = article ? article.category_slug : 'attacks-threats'
 
   // Map slugs to full article objects for Related Topics
-  const relatedArticles = article.relatedTopics
-    .map(rSlug => articles.find(a => a.slug === rSlug))
-    .filter(Boolean)
+  const relatedArticles = article 
+    ? article.relatedTopics
+        .map(rSlug => allArticles.find(a => a.slug === rSlug))
+        .filter(Boolean)
+    : []
 
   const getDifficultyBadgeClass = (diff) => {
     switch (diff?.toLowerCase()) {
@@ -61,6 +71,33 @@ export default function KnowledgeTopic() {
     if (element) {
       element.scrollIntoView({ behavior: 'smooth', block: 'start' })
     }
+  }
+
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '400px', gap: 16 }}>
+        <RefreshCw className="animate-spin" size={32} color="var(--accent)" />
+        <span style={{ color: 'var(--text-sub)', fontSize: '14px', fontWeight: 600 }}>Loading Topic Details...</span>
+      </div>
+    )
+  }
+
+  if (error || !article) {
+    return (
+      <div className="card" style={{ maxWidth: '600px', margin: '60px auto', padding: '40px 20px', textAlign: 'center' }}>
+        <HelpCircle size={48} color="var(--critical)" style={{ margin: '0 auto 16px' }} />
+        <h2 style={{ color: '#fff', fontSize: '20px', fontWeight: 800 }}>Article Not Found</h2>
+        <p style={{ color: 'var(--text-sub)', fontSize: '14px', marginTop: 8 }}>{error || "We couldn't retrieve the article details."}</p>
+        <div style={{ marginTop: 20, display: 'flex', justifyContent: 'center', gap: 12 }}>
+          <button onClick={loadData} className="btn btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+            <RefreshCw size={14} /> Retry
+          </button>
+          <Link to="/knowledge" className="btn btn-ghost">
+            Back to Knowledge Base Home
+          </Link>
+        </div>
+      </div>
+    )
   }
 
   return (

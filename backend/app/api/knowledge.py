@@ -8,7 +8,7 @@ from app.schemas.knowledge import CategoryResponse, ArticleResponse, ArticleCont
 
 router = APIRouter(prefix="/knowledge", tags=["knowledge"])
 
-def map_article_to_response(art: Article) -> ArticleResponse:
+def map_article_to_response(art: Article, relevance_score: Optional[int] = None) -> ArticleResponse:
     return ArticleResponse(
         id=art.id,
         title=art.title,
@@ -28,10 +28,11 @@ def map_article_to_response(art: Article) -> ArticleResponse:
         ),
         tags=[t.name for t in art.tags],
         relatedTopics=art.related_topics,
-        references=[r.title for r in art.references]
+        references=[r.title for r in art.references],
+        relevanceScore=relevance_score
     )
 
-@router.get("/categories", response_model=list[CategoryResponse])
+@router.get("/categories", response_model=List[CategoryResponse])
 def get_categories(db: Session = Depends(get_db)):
     """Retrieve all subject categories."""
     categories = db.query(Category).all()
@@ -45,7 +46,7 @@ def get_category_by_slug(slug: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Category not found")
     return cat
 
-@router.get("/articles", response_model=list[ArticleResponse])
+@router.get("/articles", response_model=List[ArticleResponse])
 def get_articles(
     q: Optional[str] = Query(None),
     category: Optional[str] = Query(None),
@@ -66,13 +67,13 @@ def get_articles(
         
     articles = query.all()
     
-    # Process text query filtering in python to keep it flexible (or use SQL LIKE)
-    mapped_articles = [map_article_to_response(art) for art in articles]
+    # Process text query filtering in python to keep it flexible
+    mapped_articles = []
     
     if q and q.strip():
         search_query = q.lower().strip()
-        filtered = []
-        for art in mapped_articles:
+        scored_articles = []
+        for art in articles:
             score = 0
             if art.title.lower() == search_query:
                 score += 100
@@ -80,19 +81,23 @@ def get_articles(
                 score += 85
                 
             for t in art.tags:
-                if search_query in t.lower():
+                if search_query in t.name.lower():
                     score += 15
                     
-            if art.mitreId and search_query in art.mitreId.lower():
+            if art.mitre_id and search_query in art.mitre_id.lower():
                 score += 40
             if search_query in art.summary.lower():
                 score += 20
-            if search_query in art.content.overview.lower():
+            if search_query in art.content_overview.lower():
                 score += 5
                 
-            if score > 0 or search_query in art.category.lower():
-                filtered.append(art)
-        return filtered
+            if score > 0 or search_query in art.category.name.lower() or search_query in art.category.slug.lower():
+                scored_articles.append((art, min(score, 100) or 80))
+        
+        scored_articles.sort(key=lambda x: x[1], reverse=True)
+        mapped_articles = [map_article_to_response(art, score) for art, score in scored_articles]
+    else:
+        mapped_articles = [map_article_to_response(art, 80) for art in articles]
         
     return mapped_articles
 
