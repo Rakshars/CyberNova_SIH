@@ -9,7 +9,7 @@ const CATEGORY_ICONS = {
   "vulnerabilities": <AlertTriangle size={24} className="category-icon-style" style={{ color: 'var(--medium)' }} />,
   "defense-security": <ShieldCheck size={24} className="category-icon-style" style={{ color: 'var(--low)' }} />,
   "networking": <Network size={24} className="category-icon-style" style={{ color: 'var(--accent)' }} />,
-  "mitre-attack": <Cpu size={24} className="category-icon-style" style={{ color: '#a855f7' }} />
+  "mitre-attack": <Cpu size={24} className="category-icon-style" style={{ color: 'var(--purple)' }} />
 }
 
 export default function KnowledgeLanding() {
@@ -49,7 +49,7 @@ export default function KnowledgeLanding() {
         }}
       >
         <div style={{ textAlign: 'center', marginBottom: 28 }}>
-          <h1 style={{ fontSize: '32px', fontWeight: 800, color: '#fff', letterSpacing: '-0.02em', marginBottom: 8 }}>
+          <h1 style={{ fontSize: '32px', fontWeight: 800, color: 'var(--text)', letterSpacing: '-0.02em', marginBottom: 8 }}>
             📖 Cyber Knowledge Base
           </h1>
           <p style={{ color: 'var(--text-sub)', fontSize: '15px', maxWidth: '650px', margin: '0 auto', lineHeight: '1.6' }}>
@@ -76,12 +76,11 @@ export default function KnowledgeLanding() {
                 padding: '14px 90px 14px 46px',
                 fontSize: '15px',
                 borderRadius: '12px',
-                background: 'rgba(5, 8, 15, 0.95)',
+                background: 'var(--surface-2)',
                 border: '1px solid var(--border)',
-                color: '#fff',
+                color: 'var(--text)',
                 fontFamily: 'inherit',
                 outline: 'none',
-                boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.5)',
                 transition: 'all 0.2s'
               }}
             />
@@ -119,7 +118,7 @@ export default function KnowledgeLanding() {
                 textDecoration: 'underline',
                 textDecorationStyle: 'dotted'
               }}
-              onMouseEnter={(e) => e.currentTarget.style.color = '#fff'}
+              onMouseEnter={(e) => e.currentTarget.style.color = 'var(--text)'}
               onMouseLeave={(e) => e.currentTarget.style.color = 'var(--accent)'}
             >
               {term}
@@ -165,7 +164,7 @@ export default function KnowledgeLanding() {
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8 }}>
-                    <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#fff', margin: 0, textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>{cat.name}</h3>
+                    <h3 style={{ fontSize: '16px', fontWeight: 700, color: 'var(--text)', margin: 0, textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>{cat.name}</h3>
                     <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: 700, flexShrink: 0 }}>
                       {articleCount} {articleCount === 1 ? 'Topic' : 'Topics'}
                     </span>
@@ -223,7 +222,7 @@ export default function KnowledgeLanding() {
                   </span>
                 </div>
 
-                <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#fff', margin: '6px 0' }}>{art.title}</h3>
+                <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text)', margin: '6px 0' }}>{art.title}</h3>
                 <p style={{ color: 'var(--text-sub)', fontSize: '13px', lineHeight: '1.5', marginBottom: 16 }}>
                   {art.summary}
                 </p>

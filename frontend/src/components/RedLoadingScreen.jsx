@@ -33,8 +33,8 @@ export default function RedLoadingScreen({ onFinished }) {
       left: 0,
       width: '100vw',
       height: '100vh',
-      background: '#070002',
-      color: '#ff2a6d',
+      background: 'var(--bg)',
+      color: 'var(--critical)',
       zIndex: 99999,
       display: 'flex',
       flexDirection: 'column',
@@ -60,8 +60,8 @@ export default function RedLoadingScreen({ onFinished }) {
           width: '100%',
           height: '100%',
           borderRadius: '50%',
-          border: '2px dashed rgba(255, 42, 109, 0.4)',
-          borderTopColor: '#ff2a6d',
+          border: '2px dashed rgba(239, 68, 68, 0.4)',
+          borderTopColor: 'var(--critical)',
           animation: 'redRadarSpin 1.5s linear infinite'
         }} />
 
@@ -70,15 +70,15 @@ export default function RedLoadingScreen({ onFinished }) {
           width: '80px',
           height: '80px',
           borderRadius: '50%',
-          background: 'radial-gradient(circle, rgba(255, 42, 109, 0.3) 0%, rgba(10, 0, 0, 0.9) 100%)',
-          border: '2px solid #ff2a6d',
-          boxShadow: '0 0 35px #ff2a6d',
+          background: 'radial-gradient(circle, rgba(239, 68, 68, 0.3) 0%, var(--bg) 100%)',
+          border: '2px solid var(--critical)',
+          boxShadow: '0 0 35px var(--critical)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           animation: 'redPulse 1.2s infinite'
         }}>
-          <Skull size={38} color="#ff2a6d" />
+          <Skull size={38} color="var(--critical)" />
         </div>
       </div>
 
@@ -87,14 +87,14 @@ export default function RedLoadingScreen({ onFinished }) {
         fontSize: '22px',
         fontWeight: 800,
         letterSpacing: '3px',
-        color: '#fff',
+        color: 'var(--text)',
         marginBottom: '4px',
         textTransform: 'uppercase',
-        textShadow: '0 0 15px rgba(255,42,109,0.8)'
+        textShadow: '0 0 15px rgba(239,68,68,0.8)'
       }}>
         RED TEAM OFFENSIVE C2
       </h1>
-      <div style={{ fontSize: '12px', color: '#ff2a6d', opacity: 0.8, marginBottom: '24px' }}>
+      <div style={{ fontSize: '12px', color: 'var(--critical)', opacity: 0.8, marginBottom: '24px' }}>
         CLASSIFIED ATTACK SIMULATION ENGINE v2.4
       </div>
 
@@ -102,22 +102,22 @@ export default function RedLoadingScreen({ onFinished }) {
       <div style={{
         width: '100%',
         maxWidth: '540px',
-        background: 'rgba(15, 0, 4, 0.95)',
-        border: '1px solid rgba(255, 42, 109, 0.3)',
+        background: 'var(--surface-2)',
+        border: '1px solid rgba(239, 68, 68, 0.3)',
         borderRadius: '10px',
         padding: '16px',
-        boxShadow: '0 0 30px rgba(255, 42, 109, 0.15)'
+        boxShadow: '0 0 30px rgba(239, 68, 68, 0.15)'
       }}>
         {logs.slice(0, step + 1).map((log, idx) => (
           <div key={idx} style={{
             fontSize: '11px',
             lineHeight: '1.8',
-            color: idx === step ? '#fff' : 'rgba(255, 42, 109, 0.7)',
+            color: idx === step ? 'var(--text)' : 'var(--text-sub)',
             display: 'flex',
             alignItems: 'center',
             gap: '8px'
           }}>
-            <span style={{ color: '#ff2a6d', fontWeight: 'bold' }}>[+]</span>
+            <span style={{ color: 'var(--critical)', fontWeight: 'bold' }}>[+]</span>
             <span>{log}</span>
           </div>
         ))}
@@ -128,8 +128,8 @@ export default function RedLoadingScreen({ onFinished }) {
           to { transform: rotate(360deg); }
         }
         @keyframes redPulse {
-          0%, 100% { transform: scale(1); box-shadow: 0 0 25px #ff2a6d; }
-          50% { transform: scale(1.1); box-shadow: 0 0 45px #ff2a6d; }
+          0%, 100% { transform: scale(1); box-shadow: 0 0 25px #ef4444; }
+          50% { transform: scale(1.1); box-shadow: 0 0 45px #ef4444; }
         }
       `}</style>
     </div>

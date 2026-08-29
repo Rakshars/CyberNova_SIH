@@ -42,7 +42,7 @@ export default function CyberLoadingScreen({ onFinished }) {
       left: 0,
       width: '100vw',
       height: '100vh',
-      background: '#030712',
+      background: 'var(--bg)',
       zIndex: 99999,
       display: 'flex',
       flexDirection: 'column',
@@ -58,7 +58,7 @@ export default function CyberLoadingScreen({ onFinished }) {
         position: 'absolute',
         width: '100%',
         height: '100%',
-        background: 'radial-gradient(circle at 50% 50%, rgba(0, 242, 254, 0.08), transparent 70%), linear-gradient(0deg, rgba(0,0,0,0.5) 0%, transparent 100%)',
+        background: 'radial-gradient(circle at 50% 50%, rgba(59, 130, 246, 0.08), transparent 70%), linear-gradient(0deg, var(--bg) 0%, transparent 100%)',
         pointerEvents: 'none'
       }} />
 
@@ -73,10 +73,10 @@ export default function CyberLoadingScreen({ onFinished }) {
           height: '100%',
           borderRadius: '50%',
           border: '2px solid transparent',
-          borderTopColor: '#00f2fe',
-          borderRightColor: '#05ffa1',
+          borderTopColor: '#3b82f6',
+          borderRightColor: '#8b5cf6',
           animation: 'cyberSpin 1.2s linear infinite',
-          boxShadow: '0 0 25px rgba(0, 242, 254, 0.4)'
+          boxShadow: '0 0 25px rgba(59, 130, 246, 0.4)'
         }} />
 
         {/* Counter Ring */}
@@ -87,7 +87,7 @@ export default function CyberLoadingScreen({ onFinished }) {
           width: '100px',
           height: '100px',
           borderRadius: '50%',
-          border: '1px dashed rgba(255, 42, 109, 0.5)',
+          border: '1px dashed rgba(139, 92, 246, 0.5)',
           animation: 'cyberSpinReverse 2.5s linear infinite'
         }} />
 
@@ -104,9 +104,9 @@ export default function CyberLoadingScreen({ onFinished }) {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          boxShadow: '0 0 30px rgba(0, 242, 254, 0.7), 0 0 60px rgba(0, 242, 254, 0.3)',
-          background: 'rgba(0,0,0,0.4)',
-          border: '1px solid rgba(0, 242, 254, 0.4)'
+          boxShadow: '0 0 30px rgba(59, 130, 246, 0.7), 0 0 60px rgba(139, 92, 246, 0.3)',
+          background: 'var(--surface-2)',
+          border: '1px solid rgba(59, 130, 246, 0.4)'
         }}>
           <img
             src="/logo.png"
@@ -121,9 +121,7 @@ export default function CyberLoadingScreen({ onFinished }) {
         fontSize: '24px',
         fontWeight: 800,
         letterSpacing: '0.1em',
-        background: 'linear-gradient(90deg, #ffffff 0%, #00f2fe 50%, #05ffa1 100%)',
-        WebkitBackgroundClip: 'text',
-        WebkitTextFillColor: 'transparent',
+        color: 'var(--text)',
         marginBottom: '8px',
         textTransform: 'uppercase'
       }}>
@@ -134,7 +132,7 @@ export default function CyberLoadingScreen({ onFinished }) {
         fontSize: '11px',
         fontWeight: 700,
         letterSpacing: '0.2em',
-        color: '#8b949e',
+        color: 'var(--text-sub)',
         textTransform: 'uppercase',
         marginBottom: '24px'
       }}>
@@ -142,14 +140,14 @@ export default function CyberLoadingScreen({ onFinished }) {
       </p>
 
       {/* Progress Bar Container */}
-      <div style={{ width: '280px', height: '4px', background: 'rgba(255, 255, 255, 0.1)', borderRadius: '99px', overflow: 'hidden', marginBottom: '12px' }}>
+      <div style={{ width: '280px', height: '4px', background: 'var(--border)', borderRadius: '99px', overflow: 'hidden', marginBottom: '12px' }}>
         <div style={{
           height: '100%',
           width: `${progress}%`,
-          background: 'linear-gradient(90deg, #00f2fe 0%, #05ffa1 100%)',
+          background: 'linear-gradient(90deg, var(--accent) 0%, var(--purple) 100%)',
           borderRadius: '99px',
           transition: 'width 0.4s ease',
-          boxShadow: '0 0 12px #00f2fe'
+          boxShadow: '0 0 12px rgba(59, 130, 246, 0.8)'
         }} />
       </div>
 
@@ -157,7 +155,7 @@ export default function CyberLoadingScreen({ onFinished }) {
       <div style={{
         fontSize: '11px',
         fontFamily: "'JetBrains Mono', monospace",
-        color: '#00f2fe',
+        color: 'var(--text)',
         letterSpacing: '0.05em'
       }}>
         {statusText}

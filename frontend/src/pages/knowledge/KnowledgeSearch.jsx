@@ -126,11 +126,10 @@ export default function KnowledgeSearch() {
                 padding: '10px 14px 10px 42px',
                 fontSize: '14px',
                 borderRadius: '8px',
-                background: 'rgba(5, 8, 15, 0.95)',
+                background: 'var(--surface-2)',
                 border: '1px solid var(--border)',
-                color: '#fff',
+                color: 'var(--text)',
                 outline: 'none',
-                boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.5)',
               }}
             />
           </div>
@@ -153,7 +152,7 @@ export default function KnowledgeSearch() {
           <div style={{ marginBottom: 24 }}>
             <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', display: 'block', marginBottom: 10 }}>Category</span>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '13px', cursor: 'pointer', color: selectedCategory === 'All' ? '#fff' : 'var(--text-sub)' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '13px', cursor: 'pointer', color: selectedCategory === 'All' ? 'var(--text)' : 'var(--text-sub)' }}>
                 <input 
                   type="radio" 
                   name="category" 
@@ -164,7 +163,7 @@ export default function KnowledgeSearch() {
                 All Categories
               </label>
               {categoriesList.map(cat => (
-                <label key={cat.id} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '13px', cursor: 'pointer', color: selectedCategory === cat.name ? '#fff' : 'var(--text-sub)' }}>
+                <label key={cat.id} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '13px', cursor: 'pointer', color: selectedCategory === cat.name ? 'var(--text)' : 'var(--text-sub)' }}>
                   <input 
                     type="radio" 
                     name="category" 
@@ -183,7 +182,7 @@ export default function KnowledgeSearch() {
             <span style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', display: 'block', marginBottom: 10 }}>Difficulty</span>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {['All', 'Beginner', 'Intermediate', 'Advanced'].map(diff => (
-                <label key={diff} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '13px', cursor: 'pointer', color: selectedDifficulty === diff ? '#fff' : 'var(--text-sub)' }}>
+                <label key={diff} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '13px', cursor: 'pointer', color: selectedDifficulty === diff ? 'var(--text)' : 'var(--text-sub)' }}>
                   <input 
                     type="radio" 
                     name="difficulty" 
@@ -204,7 +203,7 @@ export default function KnowledgeSearch() {
           {/* Results Summary Header */}
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0 4px' }}>
             <span style={{ fontSize: '13px', color: 'var(--text-sub)' }}>
-              Found <strong style={{ color: '#fff' }}>{results.length}</strong> matching topics
+              Found <strong style={{ color: 'var(--text)' }}>{results.length}</strong> matching topics
               {queryParam && <span> for "<span style={{ color: 'var(--accent)' }}>{queryParam}</span>"</span>}
             </span>
             {(selectedCategory !== 'All' || selectedDifficulty !== 'All') && (
@@ -234,8 +233,8 @@ export default function KnowledgeSearch() {
                 {/* Result Top Row */}
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#fff', margin: 0 }}>
-                      <Link to={`/knowledge/topic/${art.slug}`} style={{ hoverColor: 'var(--accent)' }} onMouseEnter={e => e.currentTarget.style.color = 'var(--accent)'} onMouseLeave={e => e.currentTarget.style.color = '#fff'}>
+                    <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text)', margin: 0 }}>
+                      <Link to={`/knowledge/topic/${art.slug}`} style={{ hoverColor: 'var(--accent)' }} onMouseEnter={e => e.currentTarget.style.color = 'var(--accent)'} onMouseLeave={e => e.currentTarget.style.color = 'var(--text)'}>
                         {art.title}
                       </Link>
                     </h3>
@@ -315,7 +314,7 @@ export default function KnowledgeSearch() {
             >
               <AlertCircle size={32} color="var(--critical)" />
               <div>
-                <h4 style={{ color: '#fff', fontSize: '16px', fontWeight: 700, margin: '0 0 4px' }}>No Knowledge Topics Found</h4>
+                <h4 style={{ color: 'var(--text)', fontSize: '16px', fontWeight: 700, margin: '0 0 4px' }}>No Knowledge Topics Found</h4>
                 <p style={{ color: 'var(--text-sub)', fontSize: '13px', maxWidth: '400px', margin: '0 auto' }}>
                   We couldn't find any articles matching your search query or filters. Try adjusting your keywords or clearing the category selection.
                 </p>

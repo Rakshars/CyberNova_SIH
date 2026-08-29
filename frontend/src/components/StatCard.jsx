@@ -1,5 +1,3 @@
-/* StatCard */
-
 export default function StatCard({ label, value, sub, accent }) {
   return (
     <div className="stat-card" style={accent ? { borderTop: `2px solid ${accent}` } : {}}>

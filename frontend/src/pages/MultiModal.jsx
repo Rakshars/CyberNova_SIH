@@ -1,59 +1,42 @@
-import React, { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import { scanPhishingUrl, scanScamMessage, scanDeepfakeMedia } from '../api'
+import { AlertTriangle, CheckCircle2 } from 'lucide-react'
 
 export default function MultiModal() {
-  const [activeTab, setActiveTab] = useState('phishing') // 'phishing' | 'scam' | 'deepfake'
+  const [activeTab, setActiveTab] = useState('phishing')
 
-  // Phishing state
   const [urlInput, setUrlInput] = useState('http://login-verify-bank.com.xyz/update-kyc')
   const [phishingResult, setPhishingResult] = useState(null)
   const [phishingLoading, setPhishingLoading] = useState(false)
 
-  // Scam text state
   const [scamText, setScamText] = useState('URGENT: Your Electricity power will be disconnected tonight at 9:30 PM due to pending bill. Immediately call Cyber Support Officer at +91-9876543210 or update KYC at http://bit.ly/power-bill-pay')
   const [scamChannel, setScamChannel] = useState('SMS')
   const [scamResult, setScamResult] = useState(null)
   const [scamLoading, setScamLoading] = useState(false)
 
-  // Deepfake state
   const [file, setFile] = useState(null)
   const [previewUrl, setPreviewUrl] = useState(null)
   const [deepfakeResult, setDeepfakeResult] = useState(null)
   const [deepfakeLoading, setDeepfakeLoading] = useState(false)
 
-  // Revoke the preview blob URL whenever it changes or the component unmounts
-  useEffect(() => {
-    return () => {
-      if (previewUrl) URL.revokeObjectURL(previewUrl)
-    }
-  }, [previewUrl])
+  useEffect(() => () => { if (previewUrl) URL.revokeObjectURL(previewUrl) }, [previewUrl])
 
   const handleScanUrl = async (e) => {
     e.preventDefault()
     if (!urlInput.trim()) return
     setPhishingLoading(true)
-    try {
-      const res = await scanPhishingUrl(urlInput)
-      setPhishingResult(res)
-    } catch (err) {
-      alert(`Error scanning URL: ${err.message}`)
-    } finally {
-      setPhishingLoading(false)
-    }
+    try { setPhishingResult(await scanPhishingUrl(urlInput)) }
+    catch (err) { alert(err.message) }
+    finally { setPhishingLoading(false) }
   }
 
   const handleScanScam = async (e) => {
     e.preventDefault()
     if (!scamText.trim()) return
     setScamLoading(true)
-    try {
-      const res = await scanScamMessage(scamText, scamChannel)
-      setScamResult(res)
-    } catch (err) {
-      alert(`Error scanning message: ${err.message}`)
-    } finally {
-      setScamLoading(false)
-    }
+    try { setScamResult(await scanScamMessage(scamText, scamChannel)) }
+    catch (err) { alert(err.message) }
+    finally { setScamLoading(false) }
   }
 
   const handleDeepfakeUpload = async (e) => {
@@ -61,214 +44,194 @@ export default function MultiModal() {
     if (!file) return
     setDeepfakeLoading(true)
     try {
-      const formData = new FormData()
-      formData.append('file', file)
-      const res = await scanDeepfakeMedia(formData)
-      setDeepfakeResult(res)
-    } catch (err) {
-      alert(`Error analyzing file: ${err.message}`)
-    } finally {
-      setDeepfakeLoading(false)
-    }
+      const fd = new FormData()
+      fd.append('file', file)
+      setDeepfakeResult(await scanDeepfakeMedia(fd))
+    } catch (err) { alert(err.message) }
+    finally { setDeepfakeLoading(false) }
   }
 
+  const TABS = [
+    { id: 'phishing', label: 'Phishing URL' },
+    { id: 'scam',     label: 'Scam Message' },
+    { id: 'deepfake', label: 'Deepfake Media' },
+  ]
+
   return (
-    <div className="page-content">
+    <div>
       <div className="page-header">
-        <h1>🛡️ Multi-Modal Security Hub</h1>
-        <p>AI-Powered verification for Phishing Domains, SMS/Email Scams, and Synthetic Deepfake Media</p>
+        <h1>Security Scanner</h1>
+        <p>Analyze URLs, messages, and media for phishing, scam patterns, and deepfake manipulation.</p>
       </div>
 
-      {/* Tabs Header */}
-      <div className="filters" style={{ marginBottom: '20px' }}>
-        <button
-          className={`toggle-btn ${activeTab === 'phishing' ? 'active' : ''}`}
-          onClick={() => setActiveTab('phishing')}
-        >
-          🌐 Phishing URL Inspector
-        </button>
-        <button
-          className={`toggle-btn ${activeTab === 'scam' ? 'active' : ''}`}
-          onClick={() => setActiveTab('scam')}
-        >
-          📱 Email & SMS Scam Classifier
-        </button>
-        <button
-          className={`toggle-btn ${activeTab === 'deepfake' ? 'active' : ''}`}
-          onClick={() => setActiveTab('deepfake')}
-        >
-          🎭 Deepfake Video/Image Scanner
-        </button>
+      <div className="filters" style={{ marginBottom: 20 }}>
+        {TABS.map(t => (
+          <button key={t.id} className={`toggle-btn${activeTab === t.id ? ' active' : ''}`} onClick={() => setActiveTab(t.id)}>
+            {t.label}
+          </button>
+        ))}
       </div>
 
-      {/* 1. Phishing Tab */}
       {activeTab === 'phishing' && (
         <div className="card">
-          <h2 style={{ fontSize: '15px', fontWeight: 600, marginBottom: '12px' }}>Check Domain & URL Safety</h2>
-          <form onSubmit={handleScanUrl} style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+          <div className="section-title">Phishing URL Inspector</div>
+          <form onSubmit={handleScanUrl} style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
             <input
               type="text"
-              className="filter-input"
+              className="form-input"
               style={{ flex: 1 }}
-              placeholder="Enter suspect URL (e.g. http://login-verify-bank.com)..."
+              placeholder="Enter URL to inspect…"
               value={urlInput}
-              onChange={(e) => setUrlInput(e.target.value)}
+              onChange={e => setUrlInput(e.target.value)}
             />
             <button type="submit" className="btn btn-primary" disabled={phishingLoading}>
-              {phishingLoading ? 'Scanning...' : 'Scan URL'}
+              {phishingLoading ? 'Scanning…' : 'Scan'}
             </button>
           </form>
-
           {phishingResult && (
-            <div style={{ background: 'var(--surface-2)', padding: '16px', borderRadius: 'var(--radius)', border: '1px solid var(--border-sub)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                <span style={{ fontWeight: 600 }}>Analysis Verdict:</span>
+            <div style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 'var(--r)', padding: 14 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                <span style={{ fontWeight: 600, fontSize: 13 }}>Result</span>
                 <span className={`badge badge-${phishingResult.severity.toLowerCase()}`}>
-                  {phishingResult.verdict} ({phishingResult.risk_score}/100 Risk Score)
+                  {phishingResult.verdict} — Risk {phishingResult.risk_score}/100
                 </span>
               </div>
-              <div style={{ fontSize: '12px', color: 'var(--text-sub)', marginBottom: '10px' }}>
-                Domain Entropy: <code>{phishingResult.domain_entropy}</code>
+              <div style={{ fontSize: 12, color: 'var(--text-2)', marginBottom: 8 }}>
+                Domain entropy: <code style={{ fontFamily: 'JetBrains Mono', color: 'var(--text)' }}>{phishingResult.domain_entropy}</code>
               </div>
-              <div style={{ fontSize: '13px', fontWeight: 500, marginBottom: '6px' }}>Detected Risk Signals:</div>
-              <ul style={{ paddingLeft: '20px', color: 'var(--critical)', fontSize: '12px' }}>
-                {phishingResult.risk_factors.map((f, i) => (
-                  <li key={i} style={{ marginBottom: '4px' }}>{f}</li>
-                ))}
+              <div style={{ fontSize: 12, fontWeight: 500, marginBottom: 6 }}>Risk signals:</div>
+              <ul style={{ paddingLeft: 18, color: 'var(--red)', fontSize: 12, display: 'flex', flexDirection: 'column', gap: 3 }}>
+                {phishingResult.risk_factors.map((f, i) => <li key={i}>{f}</li>)}
               </ul>
             </div>
           )}
         </div>
       )}
 
-      {/* 2. Scam Text Tab */}
       {activeTab === 'scam' && (
         <div className="card">
-          <h2 style={{ fontSize: '15px', fontWeight: 600, marginBottom: '12px' }}>Scan Email, SMS, or WhatsApp Message for Scam Patterns</h2>
-          <form onSubmit={handleScanScam} style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '20px' }}>
-            <div style={{ display: 'flex', gap: '10px' }}>
-              <select className="filter-select" value={scamChannel} onChange={(e) => setScamChannel(e.target.value)}>
-                <option value="SMS">SMS Message</option>
-                <option value="Email">Email Payload</option>
-                <option value="WhatsApp">WhatsApp Alert</option>
-                <option value="UPI">UPI Note</option>
-              </select>
-            </div>
+          <div className="section-title">Scam Message Classifier</div>
+          <form onSubmit={handleScanScam} style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 16 }}>
+            <select className="form-select" style={{ maxWidth: 200 }} value={scamChannel} onChange={e => setScamChannel(e.target.value)}>
+              <option value="SMS">SMS</option>
+              <option value="Email">Email</option>
+              <option value="WhatsApp">WhatsApp</option>
+              <option value="UPI">UPI Note</option>
+            </select>
             <textarea
-              className="feedback-textarea"
+              className="form-textarea"
               rows={4}
-              placeholder="Paste message body to analyze..."
+              placeholder="Paste message to analyze…"
               value={scamText}
-              onChange={(e) => setScamText(e.target.value)}
+              onChange={e => setScamText(e.target.value)}
             />
-            <button type="submit" className="btn btn-primary" style={{ alignSelf: 'flex-start' }} disabled={scamLoading}>
-              {scamLoading ? 'Analyzing Text...' : 'Analyze Message'}
-            </button>
+            <div>
+              <button type="submit" className="btn btn-primary" disabled={scamLoading}>
+                {scamLoading ? 'Analyzing…' : 'Analyze message'}
+              </button>
+            </div>
           </form>
-
           {scamResult && (
-            <div style={{ background: 'var(--surface-2)', padding: '16px', borderRadius: 'var(--radius)', border: '1px solid var(--border-sub)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                <span style={{ fontWeight: 600 }}>Scam Classification:</span>
+            <div style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 'var(--r)', padding: 14 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                <span style={{ fontWeight: 600, fontSize: 13 }}>Classification</span>
                 <span className={`badge badge-${scamResult.severity.toLowerCase()}`}>
-                  {scamResult.verdict} ({scamResult.scam_confidence}% Confidence)
+                  {scamResult.verdict} — {scamResult.scam_confidence}% confidence
                 </span>
               </div>
-              <div style={{ fontSize: '13px', fontWeight: 500, marginBottom: '6px' }}>Urgency & Scam Triggers Found:</div>
-              <ul style={{ paddingLeft: '20px', color: 'var(--high)', fontSize: '12px' }}>
-                {scamResult.detected_triggers.map((t, i) => (
-                  <li key={i} style={{ marginBottom: '4px' }}>{t}</li>
-                ))}
+              <div style={{ fontSize: 12, fontWeight: 500, marginBottom: 6 }}>Detected triggers:</div>
+              <ul style={{ paddingLeft: 18, color: 'var(--orange)', fontSize: 12, display: 'flex', flexDirection: 'column', gap: 3 }}>
+                {scamResult.detected_triggers.map((t, i) => <li key={i}>{t}</li>)}
               </ul>
             </div>
           )}
         </div>
       )}
 
-      {/* 3. Deepfake Scanner Tab */}
       {activeTab === 'deepfake' && (
         <div className="card">
-          <h2 style={{ fontSize: '15px', fontWeight: 600, marginBottom: '12px' }}>Deepfake Image & Video AI Forensics</h2>
-          <form onSubmit={handleDeepfakeUpload} style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '20px' }}>
-            <div style={{ border: '2px dashed var(--border)', padding: '24px', borderRadius: 'var(--radius)', textAlign: 'center', background: 'var(--surface-2)' }}>
+          <div className="section-title">Deepfake Media Scanner</div>
+          <form onSubmit={handleDeepfakeUpload} style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 16 }}>
+            <div style={{
+              border: '1px dashed var(--border)',
+              borderRadius: 'var(--r)',
+              padding: '20px 16px',
+              background: 'var(--surface-2)',
+              textAlign: 'center'
+            }}>
               <input
                 type="file"
                 accept="image/*,video/*"
-                onChange={(e) => {
+                onChange={e => {
                   const selected = e.target.files[0] || null
                   setFile(selected)
                   setDeepfakeResult(null)
-                  setPreviewUrl((prev) => {
-                    if (prev) URL.revokeObjectURL(prev)
-                    return selected ? URL.createObjectURL(selected) : null
-                  })
+                  setPreviewUrl(prev => { if (prev) URL.revokeObjectURL(prev); return selected ? URL.createObjectURL(selected) : null })
                 }}
                 style={{ cursor: 'pointer' }}
               />
-              <p style={{ marginTop: '8px', color: 'var(--text-sub)', fontSize: '12px' }}>Upload suspect video or photo to run facial artifact & GAN manipulation heatmaps</p>
+              <p style={{ marginTop: 8, color: 'var(--text-3)', fontSize: 11 }}>Upload an image or video to analyze for synthetic manipulation</p>
             </div>
-            <button type="submit" className="btn btn-primary" style={{ alignSelf: 'flex-start' }} disabled={!file || deepfakeLoading}>
-              {deepfakeLoading ? 'Analyzing Frame Vectors...' : 'Analyze Media File'}
-            </button>
+            <div>
+              <button type="submit" className="btn btn-primary" disabled={!file || deepfakeLoading}>
+                {deepfakeLoading ? 'Analyzing…' : 'Analyze media'}
+              </button>
+            </div>
           </form>
 
           {previewUrl && (
-            <div style={{ position: 'relative', display: 'inline-block', maxWidth: '100%', marginBottom: '20px' }}>
+            <div style={{ position: 'relative', display: 'inline-block', maxWidth: '100%', marginBottom: 16 }}>
               <img
                 src={previewUrl}
-                alt="Uploaded media preview"
-                style={{ display: 'block', maxWidth: '100%', maxHeight: '360px', borderRadius: 'var(--radius)', border: '1px solid var(--border-sub)' }}
+                alt="Preview"
+                style={{ display: 'block', maxWidth: '100%', maxHeight: 320, borderRadius: 'var(--r)', border: '1px solid var(--border)' }}
               />
               {deepfakeResult?.heatmap_regions?.[0] && (
-                <div
-                  style={{
-                    position: 'absolute',
-                    left: deepfakeResult.heatmap_regions[0].x,
-                    top: deepfakeResult.heatmap_regions[0].y,
-                    width: deepfakeResult.heatmap_regions[0].width,
-                    height: deepfakeResult.heatmap_regions[0].height,
-                    border: '2px solid var(--critical)',
-                    borderRadius: '4px',
-                    pointerEvents: 'none',
-                  }}
-                />
+                <div style={{
+                  position: 'absolute',
+                  left: deepfakeResult.heatmap_regions[0].x,
+                  top: deepfakeResult.heatmap_regions[0].y,
+                  width: deepfakeResult.heatmap_regions[0].width,
+                  height: deepfakeResult.heatmap_regions[0].height,
+                  border: '2px solid var(--red)',
+                  borderRadius: 4,
+                  pointerEvents: 'none'
+                }} />
               )}
             </div>
           )}
 
           {deepfakeResult && (
-            <div style={{ background: 'var(--surface-2)', padding: '16px', borderRadius: 'var(--radius)', border: '1px solid var(--border-sub)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+            <div style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: 'var(--r)', padding: 14 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
                 <div>
-                  <span style={{ fontWeight: 600, display: 'block' }}>{deepfakeResult.filename}</span>
-                  <span style={{ fontSize: '11px', color: 'var(--text-sub)' }}>Frames Analyzed: {deepfakeResult.frame_count_analyzed}</span>
+                  <div style={{ fontWeight: 600, fontSize: 13 }}>{deepfakeResult.filename}</div>
+                  <div style={{ fontSize: 11, color: 'var(--text-2)' }}>Frames analyzed: {deepfakeResult.frame_count_analyzed}</div>
                 </div>
                 <span className={`badge badge-${deepfakeResult.deepfake_probability > 70 ? 'critical' : 'low'}`}>
-                  {deepfakeResult.verdict} ({deepfakeResult.deepfake_probability}% Probability)
+                  {deepfakeResult.verdict} — {deepfakeResult.deepfake_probability}%
                 </span>
               </div>
-
-              <div style={{ marginBottom: '14px' }}>
-                <div style={{ fontSize: '13px', fontWeight: 500, marginBottom: '6px' }}>Detected Artifact Anomalies:</div>
-                <ul style={{ paddingLeft: '20px', color: 'var(--critical)', fontSize: '12px' }}>
-                  {deepfakeResult.anomalies_detected.map((a, i) => (
-                    <li key={i} style={{ marginBottom: '4px' }}>{a}</li>
-                  ))}
-                </ul>
-              </div>
-
+              {deepfakeResult.anomalies_detected.length > 0 && (
+                <>
+                  <div style={{ fontSize: 12, fontWeight: 500, marginBottom: 6 }}>Detected anomalies:</div>
+                  <ul style={{ paddingLeft: 18, color: 'var(--red)', fontSize: 12, display: 'flex', flexDirection: 'column', gap: 3, marginBottom: 12 }}>
+                    {deepfakeResult.anomalies_detected.map((a, i) => <li key={i}>{a}</li>)}
+                  </ul>
+                </>
+              )}
               {deepfakeResult.heatmap_regions.length > 0 && (
-                <div>
-                  <div style={{ fontSize: '13px', fontWeight: 500, marginBottom: '8px' }}>Facial Artifact Heatmap Regions:</div>
-                  <div style={{ display: 'flex', gap: '10px' }}>
+                <>
+                  <div style={{ fontSize: 12, fontWeight: 500, marginBottom: 8 }}>Artifact regions:</div>
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                     {deepfakeResult.heatmap_regions.map((h, i) => (
-                      <div key={i} style={{ background: 'var(--surface)', padding: '8px 12px', borderRadius: '6px', border: '1px solid var(--critical-bg)', fontSize: '12px' }}>
-                        <span style={{ fontWeight: 600, color: 'var(--critical)' }}>{h.region}</span>
-                        <div style={{ fontSize: '11px', color: 'var(--text-sub)' }}>Severity: {h.risk} ({h.x}, {h.y})</div>
+                      <div key={i} style={{ background: 'var(--surface)', padding: '6px 10px', borderRadius: 'var(--r-sm)', border: '1px solid var(--border)', fontSize: 11 }}>
+                        <span style={{ fontWeight: 600, color: 'var(--red)' }}>{h.region}</span>
+                        <div style={{ color: 'var(--text-2)' }}>Severity: {h.risk}</div>
                       </div>
                     ))}
                   </div>
-                </div>
+                </>
               )}
             </div>
           )}

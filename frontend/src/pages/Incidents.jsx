@@ -12,11 +12,11 @@ function formatDate(dt) {
 }
 
 export default function Incidents() {
-  const [data, setData] = useState({ items: [], total: 0 })
-  const [page, setPage]   = useState(1)
+  const [data, setData]       = useState({ items: [], total: 0 })
+  const [page, setPage]       = useState(1)
   const [loading, setLoading] = useState(true)
   const [severity, setSeverity] = useState('')
-  const [status,   setStatus]   = useState('')
+  const [status, setStatus]     = useState('')
   const [username, setUsername] = useState('')
   const navigate = useNavigate()
 
@@ -31,11 +31,7 @@ export default function Incidents() {
 
   const totalPages = Math.max(1, Math.ceil(data.total / PAGE_SIZE))
 
-  function handleFilter() {
-    setPage(1)
-    // useEffect will re-run because page may stay 1 — force via load
-    load()
-  }
+  function handleFilter() { setPage(1); load() }
 
   return (
     <div>
@@ -44,7 +40,6 @@ export default function Incidents() {
         <p>{data.total} total incidents</p>
       </div>
 
-      {/* Filters */}
       <div className="filters">
         <input
           id="filter-username"
@@ -52,30 +47,17 @@ export default function Incidents() {
           placeholder="Filter by username…"
           value={username}
           onChange={e => { setUsername(e.target.value); setPage(1) }}
+          style={{ minWidth: 200 }}
         />
-        <select
-          id="filter-severity"
-          className="filter-select"
-          value={severity}
-          onChange={e => { setSeverity(e.target.value); setPage(1) }}
-        >
+        <select id="filter-severity" className="filter-select" value={severity}
+          onChange={e => { setSeverity(e.target.value); setPage(1) }}>
           <option value="">All severities</option>
-          <option>critical</option>
-          <option>high</option>
-          <option>medium</option>
-          <option>low</option>
+          <option>critical</option><option>high</option><option>medium</option><option>low</option>
         </select>
-        <select
-          id="filter-status"
-          className="filter-select"
-          value={status}
-          onChange={e => { setStatus(e.target.value); setPage(1) }}
-        >
+        <select id="filter-status" className="filter-select" value={status}
+          onChange={e => { setStatus(e.target.value); setPage(1) }}>
           <option value="">All statuses</option>
-          <option>open</option>
-          <option>investigating</option>
-          <option>contained</option>
-          <option>closed</option>
+          <option>open</option><option>investigating</option><option>contained</option><option>closed</option>
         </select>
       </div>
 
@@ -84,14 +66,8 @@ export default function Incidents() {
           <table>
             <thead>
               <tr>
-                <th>ID</th>
-                <th>Title</th>
-                <th>Type</th>
-                <th>Severity</th>
-                <th>Status</th>
-                <th>Risk</th>
-                <th>User</th>
-                <th>Created</th>
+                <th>ID</th><th>Title</th><th>Type</th><th>Severity</th>
+                <th>Status</th><th>Risk</th><th>User</th><th>Created</th>
               </tr>
             </thead>
             <tbody>
@@ -100,61 +76,33 @@ export default function Incidents() {
                 <tr className="loading-row"><td colSpan={8}>No incidents found</td></tr>
               )}
               {data.items.map(inc => (
-                <tr
-                  key={inc.id}
-                  className="row-link"
-                  onClick={() => navigate(`/soc/incidents/${inc.incident_id}`)}
-                >
+                <tr key={inc.id} className="row-link"
+                  onClick={() => navigate(`/soc/incidents/${inc.incident_id}`)}>
                   <td className="td-mono">{inc.incident_id}</td>
-                  <td style={{ maxWidth: 240 }}>{inc.title}</td>
+                  <td style={{ maxWidth: 240, fontWeight: 500 }}>{inc.title}</td>
                   <td className="td-sub">{inc.incident_type || '—'}</td>
                   <td><SeverityBadge value={inc.severity} /></td>
                   <td><StatusBadge value={inc.status} /></td>
-                  <td>
-                    <span className={`risk-score risk-${inc.severity}`}>{inc.risk_score}</span>
-                  </td>
+                  <td><span className={`risk-score risk-${inc.severity}`}>{inc.risk_score}</span></td>
                   <td className="td-sub">{inc.affected_username || '—'}</td>
-                  <td className="td-sub">{formatDate(inc.created_at)}</td>
+                  <td className="td-sub" style={{ whiteSpace: 'nowrap' }}>{formatDate(inc.created_at)}</td>
                 </tr>
               ))}
             </tbody>
           </table>
         </div>
 
-        {/* Pagination */}
-        <div className="pagination" style={{ padding: '14px 16px' }}>
-          <span className="pagination-info">
-            Page {page} of {totalPages} — {data.total} incidents
-          </span>
+        <div className="pagination">
+          <span className="pagination-info">Page {page} of {totalPages} — {data.total} incidents</span>
           <div className="pagination-controls">
-            <button
-              id="prev-page"
-              className="page-btn"
-              disabled={page === 1}
-              onClick={() => setPage(p => p - 1)}
-            >
-              ← Prev
-            </button>
+            <button id="prev-page" className="page-btn" disabled={page === 1} onClick={() => setPage(p => p - 1)}>← Prev</button>
             {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
               const p = Math.max(1, Math.min(page - 2, totalPages - 4)) + i
               return (
-                <button
-                  key={p}
-                  className={`page-btn${p === page ? ' active' : ''}`}
-                  onClick={() => setPage(p)}
-                >
-                  {p}
-                </button>
+                <button key={p} className={`page-btn${p === page ? ' active' : ''}`} onClick={() => setPage(p)}>{p}</button>
               )
             })}
-            <button
-              id="next-page"
-              className="page-btn"
-              disabled={page === totalPages}
-              onClick={() => setPage(p => p + 1)}
-            >
-              Next →
-            </button>
+            <button id="next-page" className="page-btn" disabled={page === totalPages} onClick={() => setPage(p => p + 1)}>Next →</button>
           </div>
         </div>
       </div>

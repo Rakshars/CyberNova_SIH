@@ -1,14 +1,30 @@
 import { useState } from 'react'
 import { Outlet, NavLink, useNavigate } from 'react-router-dom'
-import { Terminal, Shield, Skull, Zap, Home } from 'lucide-react'
+import { Terminal, Shield, Zap, Home } from 'lucide-react'
 import RedLoadingScreen from './RedLoadingScreen'
 
+// ── Attacker palette ──────────────────────────────────────────
+// Base:    #0c0e12  (near-black with a cool undertone)
+// Surface: #13161d  (sidebar / topbar)
+// Accent:  #e86c2a  (burnt orange — readable, not neon)
+// Border:  rgba(232,108,42,0.18)
+// Text:    #d4d8e0 / rgba(255,255,255,0.45)
+// ─────────────────────────────────────────────────────────────
+
+const A = {
+  bg:         '#0c0e12',
+  surface:    '#13161d',
+  surface2:   '#191d26',
+  accent:     '#e86c2a',
+  accentDim:  'rgba(232,108,42,0.10)',
+  accentBorder:'rgba(232,108,42,0.22)',
+  border:     'rgba(255,255,255,0.07)',
+  text:       '#d4d8e0',
+  textSub:    'rgba(255,255,255,0.40)',
+}
+
 const NAV = [
-  {
-    to: '/attacker',
-    label: 'Payload Injector',
-    icon: <Terminal size={18} />,
-  },
+  { to: '/attacker', label: 'Payload Injector', icon: <Terminal size={15} /> },
 ]
 
 export default function AttackerLayout() {
@@ -19,118 +35,116 @@ export default function AttackerLayout() {
     <>
       {loading && <RedLoadingScreen onFinished={() => setLoading(false)} />}
 
-      <div className="layout attacker-theme" style={{ background: '#070002', color: '#f3f4f6' }}>
-        <aside className="sidebar" style={{ background: '#0e0104', borderRight: '1px solid rgba(255, 42, 109, 0.25)' }}>
-          <div className="sidebar-logo" style={{ borderBottom: '1px solid rgba(255, 42, 109, 0.25)' }}>
-            <div className="logo-icon" style={{ background: 'transparent', boxShadow: '0 0 15px rgba(255, 42, 109, 0.4)', padding: 0, overflow: 'hidden', borderRadius: '10px' }}>
-              <img src="/logo.png" alt="CyberNova Logo" style={{ width: '34px', height: '34px', objectFit: 'contain', filter: 'hue-rotate(160deg) saturate(1.5)', borderRadius: '8px' }} />
+      <div className="layout" style={{ background: A.bg, color: A.text }}>
+
+        {/* ── Sidebar ── */}
+        <aside className="sidebar" style={{ background: A.surface, borderRight: `1px solid ${A.border}` }}>
+
+          {/* Logo */}
+          <div className="sidebar-logo" style={{ borderBottom: `1px solid ${A.border}` }}>
+            <div className="logo-icon" style={{
+              background: 'transparent', border: `1px solid ${A.accentBorder}`,
+              borderRadius: 7, overflow: 'hidden'
+            }}>
+              <img src="/logo.png" alt="CyberNova" style={{ width: 32, height: 32, objectFit: 'contain', display: 'block' }} />
             </div>
             <div>
-              <div className="logo-text" style={{ background: 'linear-gradient(90deg, #ffffff 0%, #ff2a6d 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
-                Red Team C2
-              </div>
-              <div className="logo-sub" style={{ color: '#ff2a6d' }}>Offensive Operations</div>
+              <div className="logo-text" style={{ color: A.text }}>Red Team C2</div>
+              <div className="logo-sub" style={{ color: A.accent, opacity: 0.85 }}>Offensive Operations</div>
             </div>
           </div>
 
-          <div className="nav-section-label" style={{ color: '#ff2a6d', opacity: 0.8 }}>EXPLOIT TOOLS</div>
-          {NAV.map(({ to, label, icon }) => (
-            <NavLink
-              key={to}
-              to={to}
-              end={to === '/attacker'}
-              className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
+          {/* Nav */}
+          <div className="sidebar-nav">
+            <div className="nav-section-label" style={{ color: A.textSub }}>Exploit Tools</div>
+            {NAV.map(({ to, label, icon }) => (
+              <NavLink
+                key={to}
+                to={to}
+                end
+                className={({ isActive }) => `nav-item${isActive ? ' active' : ''}`}
+                style={({ isActive }) => ({
+                  color: isActive ? A.accent : A.textSub,
+                  background: isActive ? A.accentDim : 'transparent',
+                  borderRadius: 5,
+                })}
+              >
+                {icon}
+                {label}
+              </NavLink>
+            ))}
+          </div>
+
+          {/* Footer */}
+          <div style={{ padding: 8, borderTop: `1px solid ${A.border}`, display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <button
+              onClick={() => navigate('/')}
               style={{
-                borderColor: 'rgba(255, 42, 109, 0.2)'
+                display: 'flex', alignItems: 'center', gap: 8,
+                padding: '7px 10px', borderRadius: 5,
+                background: 'transparent', border: `1px solid ${A.border}`,
+                color: A.textSub, fontSize: 13, fontWeight: 500,
+                cursor: 'pointer', width: '100%', fontFamily: 'inherit',
+                transition: 'color 0.15s, border-color 0.15s'
+              }}
+              onMouseEnter={e => { e.currentTarget.style.color = A.text; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.18)' }}
+              onMouseLeave={e => { e.currentTarget.style.color = A.textSub; e.currentTarget.style.borderColor = A.border }}
+            >
+              <Home size={14} />
+              Back to Home
+            </button>
+
+            <NavLink
+              to="/soc"
+              style={{
+                display: 'flex', alignItems: 'center', gap: 8,
+                padding: '7px 10px', borderRadius: 5,
+                background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.20)',
+                color: '#60a5fa', fontSize: 13, fontWeight: 500, textDecoration: 'none'
               }}
             >
-              {icon}
-              {label}
+              <Shield size={14} />
+              Switch to Blue Team SOC
             </NavLink>
-          ))}
-
-          <div style={{ flex: 1 }} />
-          
-          {/* Back to Landing Page */}
-          <button
-            onClick={() => navigate('/')}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 10,
-              padding: '10px 14px',
-              color: '#fff',
-              fontSize: 12,
-              fontWeight: 700,
-              cursor: 'pointer',
-              borderRadius: 10,
-              background: 'rgba(255, 255, 255, 0.05)',
-              border: '1px solid rgba(255, 255, 255, 0.15)',
-              width: '100%',
-              marginBottom: '8px',
-              transition: 'all 0.2s'
-            }}
-            onMouseEnter={e => {
-              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'
-              e.currentTarget.style.transform = 'translateY(-2px)'
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'
-              e.currentTarget.style.transform = 'none'
-            }}
-          >
-            <Home size={15} />
-            ← Back to Home
-          </button>
-
-          <NavLink 
-            to="/soc" 
-            style={{ 
-              display: 'flex',
-              alignItems: 'center',
-              gap: 10,
-              padding: '12px 14px', 
-              color: '#00f2fe',
-              fontSize: 13,
-              fontWeight: 700,
-              textDecoration: 'none',
-              borderRadius: 10,
-              background: 'rgba(0, 242, 254, 0.08)',
-              border: '1px solid rgba(0, 242, 254, 0.3)',
-              boxShadow: '0 0 15px rgba(0, 242, 254, 0.15)',
-              transition: 'all 0.2s'
-            }}
-            onMouseEnter={e => {
-              e.currentTarget.style.background = 'rgba(0, 242, 254, 0.18)'
-              e.currentTarget.style.transform = 'translateY(-2px)'
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.background = 'rgba(0, 242, 254, 0.08)'
-              e.currentTarget.style.transform = 'none'
-            }}
-          >
-            <Shield size={16} />
-            Switch to Blue Team SOC
-          </NavLink>
+          </div>
         </aside>
 
+        {/* ── Main ── */}
         <div className="main">
-          <header className="topbar" style={{ borderBottom: '1px solid rgba(255, 42, 109, 0.25)', background: '#0e0104' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <Zap size={16} color="#ff2a6d" />
-              <span className="topbar-title" style={{ color: '#fff', fontFamily: "'JetBrains Mono', monospace", fontSize: '13px' }}>
-                root@red-team:~# ./offensive_c2_simulator
+          <header className="topbar" style={{ background: A.surface, borderBottom: `1px solid ${A.border}`, minWidth: 0, overflow: 'hidden' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 9, minWidth: 0 }}>
+              <Zap size={14} color={A.accent} style={{ flexShrink: 0 }} />
+              <span style={{
+                fontFamily: "'JetBrains Mono', monospace", fontSize: 12,
+                color: A.textSub, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis'
+              }}>
+                <span style={{ color: A.accent }}>root@red-team</span>
+                <span>:~# ./c2_simulator</span>
               </span>
             </div>
-            <div className="topbar-status" style={{ background: 'rgba(255, 42, 109, 0.12)', border: '1px solid rgba(255, 42, 109, 0.3)' }}>
-              <span className="status-dot" style={{ background: '#ff2a6d', boxShadow: '0 0 10px #ff2a6d' }} />
-              <span style={{ color: '#ff2a6d', fontWeight: 800 }}>LIVE OFFENSIVE SUBNET</span>
+
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              padding: '4px 12px', borderRadius: 99,
+              background: A.accentDim, border: `1px solid ${A.accentBorder}`,
+              flexShrink: 0
+            }}>
+              <span style={{
+                width: 6, height: 6, borderRadius: '50%',
+                background: A.accent, display: 'block',
+                animation: 'pulseDot 2s infinite'
+              }} />
+              <span style={{ fontSize: 11, fontWeight: 700, color: A.accent, whiteSpace: 'nowrap' }}>
+                OFFENSIVE SUBNET LIVE
+              </span>
             </div>
           </header>
-          <main className="page-content" style={{ background: 'radial-gradient(circle at 50% 0%, #150207 0%, #070002 100%)' }}>
+
+          <main className="page-content" style={{ background: A.bg }}>
             <Outlet />
           </main>
         </div>
+
       </div>
     </>
   )

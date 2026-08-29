@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { getIncident, getIncidentTimeline, submitFeedback } from '../api'
+import { getIncident, getIncidentTimeline, submitFeedback, investigateWithCopilot } from '../api'
 import { SeverityBadge, StatusBadge, AnomalyBadge } from '../components/Badge'
+import { ChevronDown, ChevronRight } from 'lucide-react'
 
 function fmt(dt) {
   if (!dt) return '—'
@@ -21,14 +22,16 @@ function Kv({ k, v }) {
 export default function IncidentDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const [inc, setInc] = useState(null)
-  const [timeline, setTimeline] = useState([])
+  const [inc, setInc]               = useState(null)
+  const [timeline, setTimeline]     = useState([])
   const [showTimeline, setShowTimeline] = useState(false)
-  const [verdict, setVerdict] = useState('')
-  const [notes, setNotes] = useState('')
+  const [verdict, setVerdict]       = useState('')
+  const [notes, setNotes]           = useState('')
   const [submitting, setSubmitting] = useState(false)
-  const [toast, setToast] = useState(false)
-  const [loading, setLoading] = useState(true)
+  const [toast, setToast]           = useState(false)
+  const [loading, setLoading]       = useState(true)
+  const [investigation, setInvestigation] = useState(null)
+  const [investigating, setInvestigating] = useState(false)
 
   useEffect(() => {
     getIncident(id)
@@ -40,15 +43,24 @@ export default function IncidentDetail() {
       .finally(() => setLoading(false))
   }, [id])
 
-  function loadTimeline() {
+  const loadTimeline = () => {
     if (timeline.length > 0) { setShowTimeline(v => !v); return }
-    getIncidentTimeline(id).then(events => {
-      setTimeline(events)
-      setShowTimeline(true)
-    })
+    getIncidentTimeline(id).then(events => { setTimeline(events); setShowTimeline(true) })
   }
 
-  async function handleFeedback(e) {
+  const handleInvestigate = async () => {
+    setInvestigating(true)
+    try {
+      const res = await investigateWithCopilot(id)
+      setInvestigation(res)
+    } catch (err) {
+      setInvestigation({ error: err.message })
+    } finally {
+      setInvestigating(false)
+    }
+  }
+
+  const handleFeedback = async (e) => {
     e.preventDefault()
     if (!verdict) return
     setSubmitting(true)
@@ -62,47 +74,37 @@ export default function IncidentDetail() {
     }
   }
 
-  if (loading) {
-    return <div className="empty-state">Loading incident…</div>
-  }
+  if (loading) return <div className="empty-state">Loading incident…</div>
+  if (!inc)    return <div className="empty-state">Incident not found.</div>
 
-  if (!inc) {
-    return <div className="empty-state">Incident not found.</div>
-  }
-
-  const mitres = inc.mitre_techniques || []
-  const responses = inc.response_taken || []
-  const investigation = inc.investigation || {}
+  const mitres    = inc.mitre_techniques || []
+  const responses = inc.response_taken   || []
+  const inv       = inc.investigation    || {}
 
   return (
     <div>
-      {/* Header */}
       <div className="detail-header">
         <div>
-          <div className="detail-meta" style={{ marginBottom: 8 }}>
+          <div className="detail-meta">
             <span className="detail-id">{inc.incident_id}</span>
             <SeverityBadge value={inc.severity} />
-            <StatusBadge   value={inc.status} />
+            <StatusBadge value={inc.status} />
           </div>
           <div className="detail-title">{inc.title}</div>
         </div>
-        <button className="btn btn-ghost" onClick={() => navigate(-1)}>
-          ← Back
-        </button>
+        <button className="btn btn-ghost btn-sm" onClick={() => navigate(-1)}>← Back</button>
       </div>
 
-      {/* Summary */}
       {inc.summary && (
         <div className="card" style={{ marginBottom: 12 }}>
-          <div className="section-title" style={{ marginBottom: 8 }}>Summary</div>
-          <p style={{ fontSize: 13, color: 'var(--text-sub)', lineHeight: 1.7 }}>{inc.summary}</p>
+          <div className="section-title">Summary</div>
+          <p style={{ fontSize: 13, color: 'var(--text-2)', lineHeight: 1.7 }}>{inc.summary}</p>
         </div>
       )}
 
-      {/* Key info grid */}
       <div className="detail-grid">
         <div className="card">
-          <div className="section-title" style={{ marginBottom: 12 }}>Incident Info</div>
+          <div className="section-title">Incident Info</div>
           <div className="kv-list">
             <Kv k="Type"       v={inc.incident_type} />
             <Kv k="Risk Score" v={inc.risk_score} />
@@ -114,20 +116,18 @@ export default function IncidentDetail() {
           </div>
         </div>
         <div className="card">
-          <div className="section-title" style={{ marginBottom: 12 }}>Affected</div>
+          <div className="section-title">Affected</div>
           <div className="kv-list">
             <Kv k="User"   v={inc.affected_username} />
             <Kv k="IP"     v={inc.affected_ip} />
             <Kv k="Device" v={inc.affected_device} />
-            {inc.analyst_verdict && (
-              <Kv k="Verdict" v={inc.analyst_verdict} />
-            )}
+            {inc.analyst_verdict && <Kv k="Verdict" v={inc.analyst_verdict} />}
           </div>
-          {investigation && Object.keys(investigation).length > 0 && (
+          {Object.keys(inv).length > 0 && (
             <>
-              <div className="section-title" style={{ marginTop: 16, marginBottom: 12 }}>Investigation</div>
+              <div className="section-title" style={{ marginTop: 16 }}>Investigation</div>
               <div className="kv-list">
-                {Object.entries(investigation).slice(0, 4).map(([k, v]) => (
+                {Object.entries(inv).slice(0, 4).map(([k, v]) => (
                   <Kv key={k} k={k.replace(/_/g, ' ')} v={typeof v === 'object' ? JSON.stringify(v) : String(v)} />
                 ))}
               </div>
@@ -136,72 +136,40 @@ export default function IncidentDetail() {
         </div>
       </div>
 
-      {/* 🧠 AI Memory & Multi-Agent Collaboration Panel */}
-      <div className="card" style={{ marginBottom: 12, background: 'linear-gradient(135deg, rgba(0,242,254,0.06) 0%, rgba(5,255,161,0.04) 100%)', border: '1px solid rgba(0,242,254,0.3)' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
-          {/* Multi-Agent AI System */}
-          <div>
-            <div className="section-title" style={{ color: 'var(--accent)', marginBottom: 8, display: 'flex', alignItems: 'center', gap: '6px' }}>
-              🤖 Multi-Agent AI Autonomous Investigation
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '12px' }}>
-              <div style={{ background: 'rgba(255,255,255,0.04)', padding: '6px 10px', borderRadius: '6px', display: 'flex', justifyContent: 'space-between' }}>
-                <span>🔍 <strong>Log Agent:</strong> Ingested raw telemetry & extracted feature vectors</span>
-                <span style={{ color: 'var(--low)' }}>✓ Complete</span>
-              </div>
-              <div style={{ background: 'rgba(255,255,255,0.04)', padding: '6px 10px', borderRadius: '6px', display: 'flex', justifyContent: 'space-between' }}>
-                <span>🌲 <strong>Anomaly Agent:</strong> Isolation Forest scored 0.94 anomaly probability</span>
-                <span style={{ color: 'var(--low)' }}>✓ Complete</span>
-              </div>
-              <div style={{ background: 'rgba(255,255,255,0.04)', padding: '6px 10px', borderRadius: '6px', display: 'flex', justifyContent: 'space-between' }}>
-                <span>⚡ <strong>Decision Agent:</strong> Triggered policy 'Critical Threat Auto-Containment'</span>
-                <span style={{ color: 'var(--low)' }}>✓ Active</span>
-              </div>
-              <div style={{ background: 'rgba(255,255,255,0.04)', padding: '6px 10px', borderRadius: '6px', display: 'flex', justifyContent: 'space-between' }}>
-                <span>📝 <strong>Report Agent:</strong> Reconstructed attack timeline & XAI attribution</span>
-                <span style={{ color: 'var(--low)' }}>✓ Synthesized</span>
-              </div>
-            </div>
-          </div>
-
-          {/* AI Memory */}
-          <div>
-            <div className="section-title" style={{ color: 'var(--low)', marginBottom: 8, display: 'flex', alignItems: 'center', gap: '6px' }}>
-              🧠 AI Knowledge Base & Memory Index
-            </div>
-            <div style={{ background: 'rgba(5,255,161,0.06)', border: '1px solid rgba(5,255,161,0.25)', padding: '12px', borderRadius: '8px', fontSize: '12px' }}>
-              <div style={{ fontWeight: 700, color: '#fff', marginBottom: 4, display: 'flex', justifyContent: 'space-between' }}>
-                <span>Historical Pattern Match Found</span>
-                <span className="badge badge-low">98.4% Match</span>
-              </div>
-              <p style={{ color: 'var(--text-sub)', lineHeight: 1.5 }}>
-                CyberNova AI Memory matched this attack payload against past historical incident <code>INC-0042</code>. Recommended containment action (Account Freeze &amp; IP Isolation) automatically selected based on prior successful resolution.
-              </p>
-            </div>
-          </div>
+      {/* AI Investigation */}
+      <div className="card" style={{ marginBottom: 12 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: investigation ? 14 : 0 }}>
+          <div className="section-title" style={{ margin: 0 }}>AI Sentinel Investigation</div>
+          <button className="btn btn-ghost btn-sm" onClick={handleInvestigate} disabled={investigating}>
+            {investigating ? 'Analyzing…' : 'Run Investigation'}
+          </button>
         </div>
+        {investigation && (
+          <div style={{ marginTop: 12, fontSize: 12, color: 'var(--text-2)', lineHeight: 1.7 }}>
+            {investigation.error
+              ? <span style={{ color: 'var(--red)' }}>{investigation.error}</span>
+              : <div style={{ whiteSpace: 'pre-wrap' }}>{typeof investigation === 'string' ? investigation : JSON.stringify(investigation, null, 2)}</div>
+            }
+          </div>
+        )}
       </div>
 
-      {/* MITRE */}
       {mitres.length > 0 && (
         <div className="card" style={{ marginBottom: 12 }}>
-          <div className="section-title" style={{ marginBottom: 10 }}>MITRE ATT&amp;CK</div>
+          <div className="section-title">MITRE ATT&amp;CK</div>
           <div className="mitre-list">
             {mitres.map((t, i) => (
               <div key={i} className="mitre-chip">
-                <strong>{t.id || t.technique_id}</strong>
-                {' '}
-                {t.name || t.technique_name}
+                <strong>{t.id || t.technique_id}</strong> {t.name || t.technique_name}
               </div>
             ))}
           </div>
         </div>
       )}
 
-      {/* Response */}
       {responses.length > 0 && (
         <div className="card" style={{ marginBottom: 12 }}>
-          <div className="section-title" style={{ marginBottom: 10 }}>Response Actions</div>
+          <div className="section-title">Response Actions</div>
           <div className="response-list">
             {responses.map((r, i) => (
               <div key={i} className="response-item">
@@ -212,16 +180,9 @@ export default function IncidentDetail() {
         </div>
       )}
 
-      {/* Timeline */}
       <div className="card" style={{ marginBottom: 12 }}>
-        <div
-          id="toggle-timeline"
-          className={`timeline-toggle${showTimeline ? ' open' : ''}`}
-          onClick={loadTimeline}
-        >
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M3 4.5L6 7.5L9 4.5" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
+        <div className={`timeline-toggle${showTimeline ? ' open' : ''}`} onClick={loadTimeline}>
+          {showTimeline ? <ChevronDown size={13} /> : <ChevronRight size={13} />}
           Event Timeline ({inc.event_count} events)
         </div>
         {showTimeline && (
@@ -229,19 +190,11 @@ export default function IncidentDetail() {
             <table>
               <thead>
                 <tr>
-                  <th>Timestamp</th>
-                  <th>Type</th>
-                  <th>User</th>
-                  <th>IP</th>
-                  <th>Country</th>
-                  <th>Risk</th>
-                  <th>Anomaly</th>
+                  <th>Timestamp</th><th>Type</th><th>User</th><th>IP</th><th>Country</th><th>Risk</th><th>Anomaly</th>
                 </tr>
               </thead>
               <tbody>
-                {timeline.length === 0 && (
-                  <tr className="loading-row"><td colSpan={7}>Loading…</td></tr>
-                )}
+                {timeline.length === 0 && <tr className="loading-row"><td colSpan={7}>Loading…</td></tr>}
                 {timeline.map(ev => (
                   <tr key={ev.id}>
                     <td className="td-mono">{fmt(ev.timestamp)}</td>
@@ -249,9 +202,7 @@ export default function IncidentDetail() {
                     <td className="td-sub">{ev.username}</td>
                     <td className="td-mono">{ev.ip_address}</td>
                     <td className="td-sub">{ev.country}</td>
-                    <td>
-                      <span className={`risk-score risk-${ev.risk_level?.toLowerCase()}`}>{ev.risk_score}</span>
-                    </td>
+                    <td><span className={`risk-score risk-${ev.risk_level?.toLowerCase()}`}>{ev.risk_score}</span></td>
                     <td><AnomalyBadge value={ev.is_anomaly} /></td>
                   </tr>
                 ))}
@@ -261,18 +212,14 @@ export default function IncidentDetail() {
         )}
       </div>
 
-      {/* Analyst Feedback */}
       <div className="card">
-        <div className="section-title" style={{ marginBottom: 14 }}>Analyst Verdict</div>
-        <form className="feedback-form" onSubmit={handleFeedback}>
+        <div className="section-title">Analyst Verdict</div>
+        <form onSubmit={handleFeedback} style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 12 }}>
           <div className="verdict-options">
             {['true_positive', 'false_positive', 'needs_investigation'].map(v => (
-              <button
-                key={v}
-                type="button"
+              <button key={v} type="button"
                 className={`verdict-btn${verdict === v ? ' selected' : ''}`}
-                onClick={() => setVerdict(v)}
-              >
+                onClick={() => setVerdict(v)}>
                 {v.replace(/_/g, ' ')}
               </button>
             ))}
@@ -284,19 +231,14 @@ export default function IncidentDetail() {
             onChange={e => setNotes(e.target.value)}
           />
           <div>
-            <button
-              id="submit-feedback"
-              type="submit"
-              className="btn btn-primary"
-              disabled={!verdict || submitting}
-            >
-              {submitting ? 'Saving…' : 'Save Verdict'}
+            <button type="submit" className="btn btn-primary" disabled={!verdict || submitting}>
+              {submitting ? 'Saving…' : 'Save verdict'}
             </button>
           </div>
         </form>
       </div>
 
-      {toast && <div className="toast">✓ Verdict saved</div>}
+      {toast && <div className="toast">Verdict saved successfully</div>}
     </div>
   )
 }

@@ -9,7 +9,7 @@ const CATEGORY_ICONS = {
   "vulnerabilities": <AlertTriangle size={36} style={{ color: 'var(--medium)' }} />,
   "defense-security": <ShieldCheck size={36} style={{ color: 'var(--low)' }} />,
   "networking": <Network size={36} style={{ color: 'var(--accent)' }} />,
-  "mitre-attack": <Cpu size={36} style={{ color: '#a855f7' }} />
+  "mitre-attack": <Cpu size={36} style={{ color: 'var(--purple)' }} />
 }
 
 export default function KnowledgeCategory() {
@@ -40,7 +40,7 @@ export default function KnowledgeCategory() {
     return (
       <div className="card" style={{ maxWidth: '600px', margin: '60px auto', padding: '40px 20px', textAlign: 'center' }}>
         <HelpCircle size={48} color="var(--critical)" style={{ margin: '0 auto 16px' }} />
-        <h2 style={{ color: '#fff', fontSize: '20px', fontWeight: 800 }}>Category Not Found</h2>
+        <h2 style={{ color: 'var(--text)', fontSize: '20px', fontWeight: 800 }}>Category Not Found</h2>
         <p style={{ color: 'var(--text-sub)', fontSize: '14px', marginTop: 8 }}>
           The cybersecurity category you are trying to view does not exist in our system.
         </p>
@@ -69,7 +69,7 @@ export default function KnowledgeCategory() {
           Knowledge Base
         </Link>
         <span>/</span>
-        <span style={{ color: '#fff', fontWeight: 600 }}>{categoryDetails.name}</span>
+        <span style={{ color: 'var(--text)', fontWeight: 600 }}>{categoryDetails.name}</span>
       </nav>
 
       {/* 📁 Category Header Banner */}
@@ -97,7 +97,7 @@ export default function KnowledgeCategory() {
           {CATEGORY_ICONS[categoryDetails.id] || <BookOpen size={36} color="var(--accent)" />}
         </div>
         <div style={{ flex: 1, minWidth: '280px' }}>
-          <h1 style={{ fontSize: '26px', fontWeight: 800, color: '#fff', margin: '0 0 6px' }}>
+          <h1 style={{ fontSize: '26px', fontWeight: 800, color: 'var(--text)', margin: '0 0 6px' }}>
             Category: {categoryDetails.name}
           </h1>
           <p style={{ color: 'var(--text-sub)', fontSize: '14px', margin: 0, lineHeight: '1.5' }}>
@@ -109,7 +109,7 @@ export default function KnowledgeCategory() {
       {/* 🎛️ Sort Controls & Count */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
         <span style={{ fontSize: '13px', color: 'var(--text-sub)' }}>
-          Showing <strong style={{ color: '#fff' }}>{filteredArticles.length}</strong> articles
+          Showing <strong style={{ color: 'var(--text)' }}>{filteredArticles.length}</strong> articles
         </span>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Sort by:</span>
@@ -121,11 +121,9 @@ export default function KnowledgeCategory() {
               padding: '6px 12px',
               fontSize: '12px',
               borderRadius: '6px',
-              background: 'rgba(5, 8, 15, 0.95)',
+              background: 'var(--surface-2)',
               border: '1px solid var(--border)',
-              color: '#fff',
-              outline: 'none',
-              cursor: 'pointer'
+              color: 'var(--text)',
             }}
           >
             <option value="alphabetical">Alphabetical A-Z</option>
@@ -165,8 +163,8 @@ export default function KnowledgeCategory() {
                   )}
                 </div>
 
-                <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#fff', margin: '0 0 8px' }}>
-                  <Link to={`/knowledge/topic/${art.slug}`} style={{ hoverColor: 'var(--accent)' }} onMouseEnter={e => e.currentTarget.style.color = 'var(--accent)'} onMouseLeave={e => e.currentTarget.style.color = '#fff'}>
+                <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text)', margin: '0 0 8px' }}>
+                  <Link to={`/knowledge/topic/${art.slug}`} style={{ hoverColor: 'var(--accent)' }} onMouseEnter={e => e.currentTarget.style.color = 'var(--accent)'} onMouseLeave={e => e.currentTarget.style.color = 'var(--text)'}>
                     {art.title}
                   </Link>
                 </h3>

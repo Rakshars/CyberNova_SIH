@@ -159,9 +159,9 @@ export default function KnowledgeLayout() {
               gap: 8,
               padding: '10px 12px',
               borderRadius: '10px',
-              background: 'rgba(0, 242, 254, 0.07)',
-              border: '1px solid rgba(0, 242, 254, 0.25)',
-              color: 'var(--accent)',
+              background: 'var(--blue-dim)',
+              border: '1px solid var(--blue-border)',
+              color: 'var(--blue-light)',
               fontSize: '12px',
               fontWeight: 700,
               cursor: 'pointer',
@@ -170,12 +170,12 @@ export default function KnowledgeLayout() {
               marginBottom: '6px'
             }}
             onMouseEnter={e => {
-              e.currentTarget.style.background = 'rgba(0, 242, 254, 0.15)'
+              e.currentTarget.style.background = 'var(--blue-dim)'
               e.currentTarget.style.transform = 'translateY(-1px)'
-              e.currentTarget.style.boxShadow = '0 0 14px rgba(0, 242, 254, 0.2)'
+              e.currentTarget.style.boxShadow = '0 0 14px var(--blue-border)'
             }}
             onMouseLeave={e => {
-              e.currentTarget.style.background = 'rgba(0, 242, 254, 0.07)'
+              e.currentTarget.style.background = 'var(--blue-dim)'
               e.currentTarget.style.transform = 'none'
               e.currentTarget.style.boxShadow = 'none'
             }}
@@ -256,7 +256,7 @@ export default function KnowledgeLayout() {
                     borderRadius: '99px',
                     fontSize: '12px',
                     fontWeight: 700,
-                    color: '#fff'
+                    color: 'var(--text)'
                   }}
                 >
                   <User size={14} color="var(--accent)" />
@@ -286,9 +286,9 @@ export default function KnowledgeLayout() {
                 <button
                   onClick={() => navigate('/login')}
                   style={{
-                    background: 'rgba(255,255,255,0.05)',
+                    background: 'var(--surface-2)',
                     border: '1px solid var(--border-sub)',
-                    color: 'var(--text-sub)',
+                    color: 'var(--text-2)',
                     padding: '4px 10px',
                     borderRadius: '99px',
                     fontSize: '11px',

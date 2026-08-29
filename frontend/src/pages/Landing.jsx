@@ -1,237 +1,170 @@
 import { useNavigate } from 'react-router-dom'
-import { Shield, Skull, BookOpen, ArrowRight } from 'lucide-react'
+import { Shield, Skull, BookOpen, ArrowRight, Activity, Sun, Moon } from 'lucide-react'
+import { useTheme } from '../context/ThemeContext'
+
+const CARDS = [
+  {
+    route: '/soc',
+    icon: <Shield size={26} />,
+    title: 'Blue Team SOC',
+    tag: 'Defender',
+    desc: 'AI Security Operations Command. Triage live threats, monitor network mesh, and review SOAR playbooks in real time.',
+    cta: 'Launch SOC Dashboard',
+    color: '#1a56db',
+    colorDim: 'rgba(26,86,219,0.10)',
+    colorBorder: 'rgba(26,86,219,0.22)',
+  },
+  {
+    route: '/attacker',
+    icon: <Skull size={26} />,
+    title: 'Red Team C2',
+    tag: 'Offensive',
+    desc: 'Offensive Cyber Command. Inject custom telemetry vectors and emulate live cyber attacks against the SOC.',
+    cta: 'Launch Attack Simulator',
+    color: '#e84040',
+    colorDim: 'rgba(232,64,64,0.10)',
+    colorBorder: 'rgba(232,64,64,0.22)',
+  },
+  {
+    route: '/knowledge',
+    icon: <BookOpen size={26} />,
+    title: 'Knowledge Base',
+    tag: 'Reference',
+    desc: 'Explore cybersecurity concepts, attack techniques, vulnerabilities, defenses, and threat intelligence.',
+    cta: 'Explore Knowledge Base',
+    color: '#a855f7',
+    colorDim: 'rgba(168,85,247,0.10)',
+    colorBorder: 'rgba(168,85,247,0.22)',
+  },
+]
 
 export default function Landing() {
   const navigate = useNavigate()
+  const { theme, toggle: toggleTheme } = useTheme()
 
   return (
     <div style={{
-      width: '100vw',
-      minHeight: '100vh',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      padding: '40px 20px',
-      background: 'radial-gradient(circle at center, #111827 0%, #030712 100%)',
-      color: '#ffffff',
-      fontFamily: "'Plus Jakarta Sans', sans-serif"
+      width: '100vw', minHeight: '100vh',
+      display: 'flex', flexDirection: 'column',
+      alignItems: 'center', justifyContent: 'center',
+      padding: '48px 24px',
+      background: 'var(--bg)',
+      color: 'var(--text)',
+      fontFamily: 'Inter, sans-serif',
     }}>
-      {/* Header */}
-        <div style={{ textAlign: 'center', marginBottom: '50px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '16px', marginBottom: '16px' }}>
-            <div style={{
-              width: '64px',
-              height: '64px',
-              borderRadius: '16px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              boxShadow: '0 0 30px rgba(0, 242, 254, 0.5), 0 0 60px rgba(0, 242, 254, 0.2)',
-              overflow: 'hidden',
-              background: 'rgba(0,0,0,0.3)',
-              border: '1px solid rgba(0, 242, 254, 0.3)'
-            }}>
-              <img src="/logo.png" alt="CyberNova Logo" style={{ width: '64px', height: '64px', objectFit: 'contain' }} />
-            </div>
-            <h1 style={{ fontSize: '36px', fontWeight: 800, margin: 0, letterSpacing: '-0.02em', color: '#ffffff' }}>
-              CyberNova SOC Platform
-            </h1>
+      {/* Hero */}
+      <div style={{ textAlign: 'center', marginBottom: 52, maxWidth: 560 }}>
+        <div style={{
+          display: 'inline-flex', alignItems: 'center', gap: 6,
+          background: 'rgba(26,86,219,0.10)', border: '1px solid rgba(26,86,219,0.22)',
+          borderRadius: 99, padding: '4px 12px', marginBottom: 20,
+          fontSize: 11, fontWeight: 600, color: 'var(--blue-light)', letterSpacing: '0.04em'
+        }}>
+          <Activity size={11} />
+          AUTONOMOUS AI SOC PLATFORM
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14, marginBottom: 16 }}>
+          <div style={{
+            width: 48, height: 48, borderRadius: 10,
+            overflow: 'hidden', flexShrink: 0,
+            border: '1px solid var(--border)',
+          }}>
+            <img src="/logo.png" alt="CyberNova" style={{ width: 48, height: 48, objectFit: 'contain', display: 'block' }} />
           </div>
-        <p style={{ color: '#9ca3af', fontSize: '16px', maxWidth: '500px', margin: '0 auto' }}>
-          Autonomous AI-Driven Cybersecurity Operations &amp; Threat Containment System
+          <h1 style={{
+            fontSize: 30, fontWeight: 800, margin: 0,
+            letterSpacing: '-0.03em', color: 'var(--text)',
+            lineHeight: 1.1
+          }}>
+            CyberNova SOC Platform
+          </h1>
+        </div>
+
+        <p style={{ color: 'var(--text-2)', fontSize: 15, lineHeight: 1.6, margin: 0 }}>
+          Autonomous AI-driven cybersecurity operations, real-time threat detection,
+          and instant SOAR containment — all in one command center.
         </p>
       </div>
 
-      {/* Operation Environment Cards */}
-      <div style={{ display: 'flex', gap: '28px', flexWrap: 'wrap', justifyContent: 'center', maxWidth: '1200px', width: '100%' }}>
-        
-        {/* Blue Team Defender Card */}
-        <div 
-          onClick={() => navigate('/soc')}
-          style={{
-            flex: '1 1 320px',
-            background: 'rgba(17, 24, 39, 0.85)',
-            border: '1px solid rgba(0, 242, 254, 0.35)',
-            borderRadius: '20px',
-            padding: '36px 28px',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            textAlign: 'center',
-            cursor: 'pointer',
-            transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
-            boxShadow: '0 10px 40px rgba(0, 242, 254, 0.12)',
-            position: 'relative',
-            overflow: 'hidden'
-          }}
-          onMouseEnter={e => {
-            e.currentTarget.style.transform = 'translateY(-6px)'
-            e.currentTarget.style.borderColor = '#00f2fe'
-            e.currentTarget.style.boxShadow = '0 20px 50px rgba(0, 242, 254, 0.25)'
-          }}
-          onMouseLeave={e => {
-            e.currentTarget.style.transform = 'translateY(0)'
-            e.currentTarget.style.borderColor = 'rgba(0, 242, 254, 0.35)'
-            e.currentTarget.style.boxShadow = '0 10px 40px rgba(0, 242, 254, 0.12)'
-          }}
-        >
-          <div style={{
-            width: '74px',
-            height: '74px',
-            borderRadius: '20px',
-            background: 'rgba(0, 242, 254, 0.12)',
-            color: '#00f2fe',
-            border: '1px solid rgba(0, 242, 254, 0.3)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            marginBottom: '20px',
-            boxShadow: '0 0 20px rgba(0, 242, 254, 0.2)'
-          }}>
-            <Shield size={36} />
-          </div>
-          <h2 style={{ fontSize: '22px', fontWeight: 800, color: '#ffffff', marginBottom: '8px' }}>Blue Team SOC</h2>
-          <p style={{ color: '#9ca3af', fontSize: '13px', lineHeight: '1.6', marginBottom: '24px' }}>
-            Enter the AI Security Operations Command. Triage live threats, monitor network mesh, and review SOAR playbooks.
-          </p>
-          <div style={{
-            marginTop: 'auto',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            color: '#00f2fe',
-            fontWeight: 800,
-            fontSize: '13px'
-          }}>
-            LAUNCH SOC DASHBOARD <ArrowRight size={16} />
-          </div>
-        </div>
+      {/* Cards */}
+      <div style={{
+        display: 'flex', gap: 18, flexWrap: 'wrap',
+        justifyContent: 'center', maxWidth: 1060, width: '100%'
+      }}>
+        {CARDS.map(({ route, icon, title, tag, desc, cta, color, colorDim, colorBorder }) => (
+          <div
+            key={route}
+            onClick={() => navigate(route)}
+            style={{
+              flex: '1 1 300px', maxWidth: 330,
+              background: 'var(--surface)',
+              border: `1px solid ${colorBorder}`,
+              borderRadius: 12,
+              padding: '26px 22px',
+              display: 'flex', flexDirection: 'column',
+              cursor: 'pointer',
+              transition: 'transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease',
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.transform = 'translateY(-3px)'
+              e.currentTarget.style.borderColor = color
+              e.currentTarget.style.boxShadow = '0 10px 30px rgba(0,0,0,0.35)'
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.transform = 'translateY(0)'
+              e.currentTarget.style.borderColor = colorBorder
+              e.currentTarget.style.boxShadow = 'none'
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16 }}>
+              <div style={{
+                width: 48, height: 48, borderRadius: 8,
+                background: colorDim, color,
+                border: `1px solid ${colorBorder}`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                flexShrink: 0
+              }}>
+                {icon}
+              </div>
+              <span style={{
+                fontSize: 10, fontWeight: 700, letterSpacing: '0.06em',
+                color, background: colorDim,
+                border: `1px solid ${colorBorder}`,
+                padding: '2px 8px', borderRadius: 99,
+                textTransform: 'uppercase'
+              }}>
+                {tag}
+              </span>
+            </div>
 
-        {/* Red Team Attacker Card */}
-        <div 
-          onClick={() => navigate('/attacker')}
-          style={{
-            flex: '1 1 320px',
-            background: 'rgba(15, 0, 5, 0.85)',
-            border: '1px solid rgba(255, 42, 109, 0.35)',
-            borderRadius: '20px',
-            padding: '36px 28px',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            textAlign: 'center',
-            cursor: 'pointer',
-            transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
-            boxShadow: '0 10px 40px rgba(255, 42, 109, 0.12)',
-            position: 'relative',
-            overflow: 'hidden'
-          }}
-          onMouseEnter={e => {
-            e.currentTarget.style.transform = 'translateY(-6px)'
-            e.currentTarget.style.borderColor = '#ff2a6d'
-            e.currentTarget.style.boxShadow = '0 20px 50px rgba(255, 42, 109, 0.25)'
-          }}
-          onMouseLeave={e => {
-            e.currentTarget.style.transform = 'translateY(0)'
-            e.currentTarget.style.borderColor = 'rgba(255, 42, 109, 0.35)'
-            e.currentTarget.style.boxShadow = '0 10px 40px rgba(255, 42, 109, 0.12)'
-          }}
-        >
-          <div style={{
-            width: '74px',
-            height: '74px',
-            borderRadius: '20px',
-            background: 'rgba(255, 42, 109, 0.12)',
-            color: '#ff2a6d',
-            border: '1px solid rgba(255, 42, 109, 0.3)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            marginBottom: '20px',
-            boxShadow: '0 0 20px rgba(255, 42, 109, 0.2)'
-          }}>
-            <Skull size={36} />
+            <h2 style={{ fontSize: 16, fontWeight: 700, color: 'var(--text)', marginBottom: 8, letterSpacing: '-0.01em' }}>
+              {title}
+            </h2>
+            <p style={{ color: 'var(--text-2)', fontSize: 13, lineHeight: 1.65, marginBottom: 22, flex: 1 }}>
+              {desc}
+            </p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, color, fontWeight: 600, fontSize: 13 }}>
+              {cta} <ArrowRight size={13} />
+            </div>
           </div>
-          <h2 style={{ fontSize: '22px', fontWeight: 800, color: '#ffffff', marginBottom: '8px' }}>Red Team C2</h2>
-          <p style={{ color: '#9ca3af', fontSize: '13px', lineHeight: '1.6', marginBottom: '24px' }}>
-            Enter the Offensive Cyber Command. Inject custom telemetry vectors and emulate live cyber attacks.
-          </p>
-          <div style={{
-            marginTop: 'auto',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            color: '#ff2a6d',
-            fontWeight: 800,
-            fontSize: '13px'
-          }}>
-            LAUNCH ATTACK SIMULATOR <ArrowRight size={16} />
-          </div>
-        </div>
+        ))}
+      </div>
 
-        {/* Cyber Knowledge Base Card */}
-        <div 
-          onClick={() => navigate('/knowledge')}
+      <div style={{ marginTop: 40, display: 'flex', alignItems: 'center', gap: 16 }}>
+        <p style={{ fontSize: 12, color: 'var(--text-3)' }}>CyberNova Sentinel · Autonomous AI Security Operations</p>
+        <button
+          onClick={toggleTheme}
           style={{
-            flex: '1 1 320px',
-            background: 'rgba(10, 5, 20, 0.85)',
-            border: '1px solid rgba(168, 85, 247, 0.35)',
-            borderRadius: '20px',
-            padding: '36px 28px',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            textAlign: 'center',
-            cursor: 'pointer',
-            transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
-            boxShadow: '0 10px 40px rgba(168, 85, 247, 0.12)',
-            position: 'relative',
-            overflow: 'hidden'
+            width: 32, height: 32, borderRadius: 'var(--r-sm)',
+            background: 'var(--surface)', border: '1px solid var(--border)',
+            color: 'var(--text-2)', display: 'flex', alignItems: 'center',
+            justifyContent: 'center', cursor: 'pointer'
           }}
-          onMouseEnter={e => {
-            e.currentTarget.style.transform = 'translateY(-6px)'
-            e.currentTarget.style.borderColor = '#a855f7'
-            e.currentTarget.style.boxShadow = '0 20px 50px rgba(168, 85, 247, 0.25)'
-          }}
-          onMouseLeave={e => {
-            e.currentTarget.style.transform = 'translateY(0)'
-            e.currentTarget.style.borderColor = 'rgba(168, 85, 247, 0.35)'
-            e.currentTarget.style.boxShadow = '0 10px 40px rgba(168, 85, 247, 0.12)'
-          }}
+          title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
         >
-          <div style={{
-            width: '74px',
-            height: '74px',
-            borderRadius: '20px',
-            background: 'rgba(168, 85, 247, 0.12)',
-            color: '#a855f7',
-            border: '1px solid rgba(168, 85, 247, 0.3)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            marginBottom: '20px',
-            boxShadow: '0 0 20px rgba(168, 85, 247, 0.2)'
-          }}>
-            <BookOpen size={36} />
-          </div>
-          <h2 style={{ fontSize: '22px', fontWeight: 800, color: '#ffffff', marginBottom: '8px' }}>Knowledge Base</h2>
-          <p style={{ color: '#9ca3af', fontSize: '13px', lineHeight: '1.6', marginBottom: '24px' }}>
-            Explore cybersecurity concepts, attacks, vulnerabilities, defenses, and threat intelligence encyclopedias.
-          </p>
-          <div style={{
-            marginTop: 'auto',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px',
-            color: '#a855f7',
-            fontWeight: 800,
-            fontSize: '13px'
-          }}>
-            EXPLORE KNOWLEDGE BASE <ArrowRight size={16} />
-          </div>
-        </div>
-
+          {theme === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
+        </button>
       </div>
     </div>
   )

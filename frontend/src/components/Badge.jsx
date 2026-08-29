@@ -1,5 +1,3 @@
-/* Badge — severity / status / risk level chips */
-
 const SEVERITY_CLASS = {
   critical: 'badge-critical',
   high:     'badge-high',
@@ -8,10 +6,10 @@ const SEVERITY_CLASS = {
 }
 
 const STATUS_CLASS = {
-  open:        'badge-critical',
+  open:          'badge-critical',
   investigating: 'badge-high',
-  contained:   'badge-medium',
-  closed:      'badge-neutral',
+  contained:     'badge-medium',
+  closed:        'badge-neutral',
 }
 
 const RISK_CLASS = {

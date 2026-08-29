@@ -26,7 +26,7 @@ export default function KnowledgeTopic() {
     return (
       <div className="card" style={{ maxWidth: '600px', margin: '60px auto', padding: '40px 20px', textAlign: 'center' }}>
         <HelpCircle size={48} color="var(--critical)" style={{ margin: '0 auto 16px' }} />
-        <h2 style={{ color: '#fff', fontSize: '20px', fontWeight: 800 }}>Article Not Found</h2>
+        <h2 style={{ color: 'var(--text)', fontSize: '20px', fontWeight: 800 }}>Article Not Found</h2>
         <p style={{ color: 'var(--text-sub)', fontSize: '14px', marginTop: 8 }}>
           The cybersecurity topic you are trying to view does not exist in our Knowledge Base or has been moved.
         </p>
@@ -76,7 +76,7 @@ export default function KnowledgeTopic() {
           {article.category}
         </Link>
         <span>/</span>
-        <span style={{ color: '#fff', fontWeight: 600, wordBreak: 'break-word' }}>{article.title}</span>
+        <span style={{ color: 'var(--text)', fontWeight: 600, wordBreak: 'break-word' }}>{article.title}</span>
       </nav>
 
       {/* 📰 Main Article Header */}
@@ -98,7 +98,7 @@ export default function KnowledgeTopic() {
             </span>
           )}
         </div>
-        <h1 style={{ fontSize: isMobile ? '24px' : '28px', fontWeight: 800, color: '#fff', margin: '0 0 8px', letterSpacing: '-0.02em', lineBreak: 'anywhere', wordBreak: 'break-word' }}>
+        <h1 style={{ fontSize: isMobile ? '24px' : '28px', fontWeight: 800, color: 'var(--text)', margin: '0 0 8px', letterSpacing: '-0.02em', lineBreak: 'anywhere', wordBreak: 'break-word' }}>
           {article.title}
         </h1>
         <p style={{ color: 'var(--text-sub)', fontSize: '14px', lineHeight: '1.6', margin: 0 }}>
@@ -158,7 +158,7 @@ export default function KnowledgeTopic() {
                     transition: 'all 0.15s'
                   }}
                   onMouseEnter={e => {
-                    e.currentTarget.style.color = '#fff'
+                    e.currentTarget.style.color = 'var(--text)'
                     e.currentTarget.style.borderLeftColor = 'rgba(0, 242, 254, 0.4)'
                   }}
                   onMouseLeave={e => {
@@ -218,7 +218,7 @@ export default function KnowledgeTopic() {
           
           {/* Overview Section */}
           <section id="overview" className="card" style={{ padding: isMobile ? '16px 20px' : '24px 28px' }}>
-            <h2 style={{ fontSize: '18px', fontWeight: 800, color: '#fff', borderBottom: '1px solid var(--border-sub)', paddingBottom: 10, marginBottom: 14 }}>
+            <h2 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text)', borderBottom: '1px solid var(--border-sub)', paddingBottom: 10, marginBottom: 14 }}>
               Overview
             </h2>
             <p style={{ fontSize: '14.5px', color: 'var(--text)', lineHeight: '1.65', margin: 0 }}>
@@ -228,7 +228,7 @@ export default function KnowledgeTopic() {
 
           {/* How It Works Section */}
           <section id="how-it-works" className="card" style={{ padding: isMobile ? '16px 20px' : '24px 28px' }}>
-            <h2 style={{ fontSize: '18px', fontWeight: 800, color: '#fff', borderBottom: '1px solid var(--border-sub)', paddingBottom: 10, marginBottom: 14 }}>
+            <h2 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text)', borderBottom: '1px solid var(--border-sub)', paddingBottom: 10, marginBottom: 14 }}>
               How It Works
             </h2>
             <p style={{ fontSize: '14.5px', color: 'var(--text)', lineHeight: '1.65', margin: 0 }}>
@@ -239,7 +239,7 @@ export default function KnowledgeTopic() {
           {/* Attack Flow Visualization Section */}
           {article.content.attackFlow && (
             <section id="attack-flow" className="card" style={{ padding: isMobile ? '16px 20px' : '24px 28px' }}>
-              <h2 style={{ fontSize: '18px', fontWeight: 800, color: '#fff', borderBottom: '1px solid var(--border-sub)', paddingBottom: 10, marginBottom: 16 }}>
+              <h2 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text)', borderBottom: '1px solid var(--border-sub)', paddingBottom: 10, marginBottom: 16 }}>
                 Attack Flow Sequence
               </h2>
               
@@ -249,7 +249,7 @@ export default function KnowledgeTopic() {
                   display: 'flex', 
                   flexDirection: 'column', 
                   gap: 12, 
-                  background: 'rgba(5, 8, 15, 0.5)', 
+                  background: 'var(--surface-2)', 
                   padding: 20, 
                   borderRadius: '10px',
                   border: '1px solid var(--border-sub)' 
@@ -263,8 +263,8 @@ export default function KnowledgeTopic() {
                       style={{ 
                         width: '100%',
                         padding: '12px 16px',
-                        background: 'rgba(17, 24, 39, 0.9)',
-                        border: '1px solid rgba(0, 242, 254, 0.2)',
+                        background: 'var(--surface)',
+                        border: '1px solid var(--border)',
                         borderRadius: '8px',
                         boxShadow: '0 4px 15px rgba(0, 242, 254, 0.05)',
                         display: 'flex',
@@ -300,7 +300,7 @@ export default function KnowledgeTopic() {
                       </div>
 
                       {/* Step Text */}
-                      <span style={{ fontSize: '13.5px', fontWeight: 600, color: '#fff' }}>
+                      <span style={{ fontSize: '13.5px', fontWeight: 600, color: 'var(--text)' }}>
                         {step}
                       </span>
                     </div>
@@ -321,7 +321,7 @@ export default function KnowledgeTopic() {
 
           {/* Detection Section */}
           <section id="detection" className="card" style={{ padding: isMobile ? '16px 20px' : '24px 28px' }}>
-            <h2 style={{ fontSize: '18px', fontWeight: 800, color: '#fff', borderBottom: '1px solid var(--border-sub)', paddingBottom: 10, marginBottom: 14 }}>
+            <h2 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text)', borderBottom: '1px solid var(--border-sub)', paddingBottom: 10, marginBottom: 14 }}>
               Detection
             </h2>
             <p style={{ fontSize: '14.5px', color: 'var(--text)', lineHeight: '1.65', margin: 0 }}>
@@ -331,7 +331,7 @@ export default function KnowledgeTopic() {
 
           {/* Prevention Section */}
           <section id="prevention" className="card" style={{ padding: isMobile ? '16px 20px' : '24px 28px' }}>
-            <h2 style={{ fontSize: '18px', fontWeight: 800, color: '#fff', borderBottom: '1px solid var(--border-sub)', paddingBottom: 10, marginBottom: 14 }}>
+            <h2 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text)', borderBottom: '1px solid var(--border-sub)', paddingBottom: 10, marginBottom: 14 }}>
               Prevention &amp; Mitigation
             </h2>
             <p style={{ fontSize: '14.5px', color: 'var(--text)', lineHeight: '1.65', margin: 0 }}>
@@ -342,7 +342,7 @@ export default function KnowledgeTopic() {
           {/* Related Topics Section */}
           {relatedArticles.length > 0 && (
             <section id="related-topics" className="card" style={{ padding: isMobile ? '16px 20px' : '24px 28px' }}>
-              <h2 style={{ fontSize: '18px', fontWeight: 800, color: '#fff', borderBottom: '1px solid var(--border-sub)', paddingBottom: 10, marginBottom: 14 }}>
+              <h2 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text)', borderBottom: '1px solid var(--border-sub)', paddingBottom: 10, marginBottom: 14 }}>
                 Related Topics
               </h2>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 240px), 1fr))', gap: 14 }}>
@@ -374,7 +374,7 @@ export default function KnowledgeTopic() {
                     }}
                   >
                     <div>
-                      <h4 style={{ fontSize: '14px', fontWeight: 700, color: '#fff', margin: '0 0 4px' }}>{rel.title}</h4>
+                      <h4 style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text)', margin: '0 0 4px' }}>{rel.title}</h4>
                       <p style={{ color: 'var(--text-sub)', fontSize: '11px', margin: 0, lineHeight: '1.4' }}>
                         {rel.summary.substring(0, 80)}...
                       </p>
@@ -392,7 +392,7 @@ export default function KnowledgeTopic() {
 
           {/* References Section */}
           <section id="references" className="card" style={{ padding: isMobile ? '16px 20px' : '24px 28px' }}>
-            <h2 style={{ fontSize: '18px', fontWeight: 800, color: '#fff', borderBottom: '1px solid var(--border-sub)', paddingBottom: 10, marginBottom: 14 }}>
+            <h2 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text)', borderBottom: '1px solid var(--border-sub)', paddingBottom: 10, marginBottom: 14 }}>
               References
             </h2>
             <ul style={{ paddingLeft: 20, margin: 0, display: 'flex', flexDirection: 'column', gap: 8, fontSize: '13.5px', color: 'var(--text-sub)' }}>
@@ -423,7 +423,7 @@ export default function KnowledgeTopic() {
               
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span style={{ color: 'var(--text-sub)' }}>Category:</span>
-                <span style={{ fontWeight: 600, color: '#fff' }}>{article.category}</span>
+                <span style={{ fontWeight: 600, color: 'var(--text)' }}>{article.category}</span>
               </div>
 
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -442,7 +442,7 @@ export default function KnowledgeTopic() {
 
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                 <span style={{ color: 'var(--text-sub)' }}>Last Updated:</span>
-                <span style={{ color: '#fff', display: 'flex', alignItems: 'center', gap: 4 }}>
+                <span style={{ color: 'var(--text)', display: 'flex', alignItems: 'center', gap: 4 }}>
                   <Calendar size={12} color="var(--text-muted)" />
                   {article.lastUpdated}
                 </span>
