@@ -7,7 +7,7 @@ and interactive SOC assistant recommendations.
 """
 
 import os
-import google.generativeai as genai
+import google.genai as genai
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 from typing import Optional, List

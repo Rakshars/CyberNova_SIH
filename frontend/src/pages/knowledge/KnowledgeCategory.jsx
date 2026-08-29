@@ -1,7 +1,7 @@
 import { useParams, Link } from 'react-router-dom'
 import { useState, useEffect } from 'react'
-import { BookOpen, HelpCircle, ArrowRight, ShieldAlert, Bug, AlertTriangle, ShieldCheck, Network, Cpu } from 'lucide-react'
-import { categoriesList, articles } from '../../data/mockKnowledge'
+import { BookOpen, HelpCircle, ArrowRight, ShieldAlert, Bug, AlertTriangle, ShieldCheck, Network, Cpu, AlertCircle, RefreshCw } from 'lucide-react'
+import { getKnowledgeCategory, getKnowledgeArticles } from '../../api'
 
 const CATEGORY_ICONS = {
   "attacks-threats": <ShieldAlert size={36} style={{ color: 'var(--critical)' }} />,
@@ -9,44 +9,76 @@ const CATEGORY_ICONS = {
   "vulnerabilities": <AlertTriangle size={36} style={{ color: 'var(--medium)' }} />,
   "defense-security": <ShieldCheck size={36} style={{ color: 'var(--low)' }} />,
   "networking": <Network size={36} style={{ color: 'var(--accent)' }} />,
-  "mitre-attack": <Cpu size={36} style={{ color: 'var(--purple)' }} />
+  "mitre-attack": <Cpu size={36} style={{ color: '#a855f7' }} />
 }
 
 export default function KnowledgeCategory() {
   const { category } = useParams()
-  const [sortOrder, setSortOrder] = useState('alphabetical')
+  const [categoryDetails, setCategoryDetails] = useState(null)
+  const [rawArticles, setRawArticles] = useState([])
   const [filteredArticles, setFilteredArticles] = useState([])
+  const [sortOrder, setSortOrder] = useState('alphabetical')
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
 
-  // Find the category based on URL slug parameter
-  const categoryDetails = categoriesList.find(c => c.id === category)
+  const loadData = async () => {
+    try {
+      setLoading(true)
+      const cat = await getKnowledgeCategory(category)
+      setCategoryDetails(cat)
+      const arts = await getKnowledgeArticles({ category: cat.name })
+      setRawArticles(arts.items || arts)
+      setError(null)
+    } catch (err) {
+      console.error("Error loading category data:", err)
+      setError("The requested category was not found or the database connection failed.")
+    } finally {
+      setLoading(false)
+    }
+  }
 
   useEffect(() => {
-    if (!categoryDetails) return
+    loadData()
+  }, [category])
 
-    let list = articles.filter(a => a.category.toLowerCase() === categoryDetails.name.toLowerCase())
-
-    // Apply sorting
+  useEffect(() => {
+    let list = [...rawArticles]
     if (sortOrder === 'alphabetical') {
       list.sort((a, b) => a.title.localeCompare(b.title))
     } else if (sortOrder === 'difficulty') {
       const diffWeight = { 'beginner': 1, 'intermediate': 2, 'advanced': 3 }
-      list.sort((a, b) => diffWeight[a.difficulty.toLowerCase()] - diffWeight[b.difficulty.toLowerCase()])
+      list.sort((a, b) => {
+        const wA = diffWeight[a.difficulty.toLowerCase()] || 0
+        const wB = diffWeight[b.difficulty.toLowerCase()] || 0
+        return wA - wB
+      })
     }
-
     setFilteredArticles(list)
-  }, [categoryDetails, sortOrder])
+  }, [rawArticles, sortOrder])
 
-  if (!categoryDetails) {
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '300px', gap: 16 }}>
+        <RefreshCw className="animate-spin" size={32} color="var(--accent)" />
+        <span style={{ color: 'var(--text-sub)', fontSize: '14px', fontWeight: 600 }}>Loading Category Topics...</span>
+      </div>
+    )
+  }
+
+  if (error) {
     return (
       <div className="card" style={{ maxWidth: '600px', margin: '60px auto', padding: '40px 20px', textAlign: 'center' }}>
-        <HelpCircle size={48} color="var(--critical)" style={{ margin: '0 auto 16px' }} />
-        <h2 style={{ color: 'var(--text)', fontSize: '20px', fontWeight: 800 }}>Category Not Found</h2>
-        <p style={{ color: 'var(--text-sub)', fontSize: '14px', marginTop: 8 }}>
-          The cybersecurity category you are trying to view does not exist in our system.
-        </p>
-        <Link to="/knowledge" className="btn btn-primary" style={{ marginTop: 20 }}>
-          Back to Knowledge Base Home
-        </Link>
+        <AlertCircle size={48} color="var(--critical)" style={{ margin: '0 auto 16px' }} />
+        <h2 style={{ color: 'var(--text)', fontSize: '20px', fontWeight: 800 }}>Category Loading Error</h2>
+        <p style={{ color: 'var(--text-sub)', fontSize: '14px', marginTop: 8 }}>{error}</p>
+        <div style={{ marginTop: 20, display: 'flex', justifyContent: 'center', gap: 12 }}>
+          <button onClick={loadData} className="btn btn-primary" style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
+            <RefreshCw size={14} /> Retry
+          </button>
+          <Link to="/knowledge" className="btn btn-ghost">
+            Back to Knowledge Base Home
+          </Link>
+        </div>
       </div>
     )
   }
@@ -69,7 +101,7 @@ export default function KnowledgeCategory() {
           Knowledge Base
         </Link>
         <span>/</span>
-        <span style={{ color: 'var(--text)', fontWeight: 600 }}>{categoryDetails.name}</span>
+        <span style={{ color: '#fff', fontWeight: 600 }}>{categoryDetails.name}</span>
       </nav>
 
       {/* 📁 Category Header Banner */}
@@ -97,7 +129,7 @@ export default function KnowledgeCategory() {
           {CATEGORY_ICONS[categoryDetails.id] || <BookOpen size={36} color="var(--accent)" />}
         </div>
         <div style={{ flex: 1, minWidth: '280px' }}>
-          <h1 style={{ fontSize: '26px', fontWeight: 800, color: 'var(--text)', margin: '0 0 6px' }}>
+          <h1 style={{ fontSize: '26px', fontWeight: 800, color: '#fff', margin: '0 0 6px' }}>
             Category: {categoryDetails.name}
           </h1>
           <p style={{ color: 'var(--text-sub)', fontSize: '14px', margin: 0, lineHeight: '1.5' }}>
@@ -109,7 +141,7 @@ export default function KnowledgeCategory() {
       {/* 🎛️ Sort Controls & Count */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
         <span style={{ fontSize: '13px', color: 'var(--text-sub)' }}>
-          Showing <strong style={{ color: 'var(--text)' }}>{filteredArticles.length}</strong> articles
+          Showing <strong style={{ color: '#fff' }}>{filteredArticles.length}</strong> articles
         </span>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
           <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>Sort by:</span>
@@ -121,9 +153,11 @@ export default function KnowledgeCategory() {
               padding: '6px 12px',
               fontSize: '12px',
               borderRadius: '6px',
-              background: 'var(--surface-2)',
+              background: 'rgba(5, 8, 15, 0.95)',
               border: '1px solid var(--border)',
-              color: 'var(--text)',
+              color: '#fff',
+              outline: 'none',
+              cursor: 'pointer'
             }}
           >
             <option value="alphabetical">Alphabetical A-Z</option>
@@ -163,8 +197,8 @@ export default function KnowledgeCategory() {
                   )}
                 </div>
 
-                <h3 style={{ fontSize: '18px', fontWeight: 800, color: 'var(--text)', margin: '0 0 8px' }}>
-                  <Link to={`/knowledge/topic/${art.slug}`} style={{ hoverColor: 'var(--accent)' }} onMouseEnter={e => e.currentTarget.style.color = 'var(--accent)'} onMouseLeave={e => e.currentTarget.style.color = 'var(--text)'}>
+                <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#fff', margin: '0 0 8px' }}>
+                  <Link to={`/knowledge/topic/${art.slug}`} style={{ hoverColor: 'var(--accent)' }} onMouseEnter={e => e.currentTarget.style.color = 'var(--accent)'} onMouseLeave={e => e.currentTarget.style.color = '#fff'}>
                     {art.title}
                   </Link>
                 </h3>

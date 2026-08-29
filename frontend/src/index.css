@@ -857,3 +857,133 @@ td { padding: 10px 14px; color: var(--text); vertical-align: middle; }
   .page-content { padding: 16px; }
   .detail-grid { grid-template-columns: 1fr; }
 }
+
+/* ---------- Mobile Responsive Sidebar (Knowledge Base) ---------- */
+.mobile-menu-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-sub);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-sub);
+  cursor: pointer;
+  padding: 8px;
+  margin-right: 12px;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition);
+}
+
+.mobile-menu-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  border-color: var(--accent);
+}
+
+.sidebar-close-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-sub);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-sub);
+  cursor: pointer;
+  padding: 8px;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition);
+  position: absolute;
+  top: 15px;
+  right: 15px;
+}
+
+.sidebar-close-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--critical);
+}
+
+.sidebar-mobile-header {
+  display: none;
+}
+
+.sidebar-overlay {
+  display: none;
+}
+
+@media (max-width: 1024px) {
+  .kb-layout .mobile-menu-btn {
+    display: inline-flex;
+  }
+
+  .kb-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 260px;
+    transform: translateX(-100%);
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    z-index: 1000;
+    background: rgba(13, 17, 23, 0.98) !important;
+    backdrop-filter: blur(20px);
+    border-right: 1px solid var(--border);
+    box-shadow: 5px 0 25px rgba(0, 0, 0, 0.8);
+  }
+
+  .kb-sidebar.mobile-open {
+    transform: translateX(0);
+  }
+
+  .kb-sidebar .sidebar-close-btn {
+    display: inline-flex;
+  }
+
+  .kb-sidebar .sidebar-mobile-header {
+    display: block;
+    height: 45px;
+    position: relative;
+    margin-bottom: 10px;
+  }
+
+  .sidebar-overlay {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    z-index: 999;
+  }
+
+  /* Compact Topbar on mobile */
+  .kb-layout .topbar {
+    padding: 0 16px;
+    justify-content: flex-start;
+  }
+
+  .kb-layout .topbar-title {
+    font-size: 13px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 140px;
+  }
+
+  .kb-layout .topbar-status {
+    padding: 4px 6px;
+  }
+
+  .kb-layout .topbar-status .status-text {
+    display: none;
+  }
+
+  .kb-layout .topbar-user-badge {
+    max-width: 110px;
+    padding: 4px 8px !important;
+  }
+
+  .kb-layout .topbar-user-badge span {
+    display: none;
+  }
+}
+

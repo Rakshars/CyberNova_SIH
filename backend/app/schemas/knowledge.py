@@ -29,8 +29,8 @@ class MitreTechniqueResponse(BaseModel):
 
 class ArticleContentSchema(BaseModel):
     overview: str
-    howWorks: str = Field(..., serialization_alias="howItWorks")  # maps content_how_it_works to howItWorks
-    attackFlow: list[str] = Field(..., serialization_alias="attackFlow")  # maps attack_flow to attackFlow
+    howItWorks: str  # maps content_how_it_works to howItWorks
+    attackFlow: list[str]  # maps attack_flow to attackFlow
     detection: str
     prevention: str
 
@@ -49,4 +49,12 @@ class ArticleResponse(BaseModel):
     relatedTopics: list[str] = Field(..., serialization_alias="relatedTopics")
     references: list[str]
 
+    relevanceScore: Optional[int] = Field(default=None, serialization_alias="relevanceScore")
+
     model_config = {"from_attributes": True, "populate_by_name": True}
+
+class ArticleListResponse(BaseModel):
+    total: int
+    page: int
+    limit: int
+    items: list[ArticleResponse]

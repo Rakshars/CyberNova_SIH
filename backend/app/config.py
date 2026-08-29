@@ -29,8 +29,8 @@ class Settings(BaseSettings):
     # Secret
     secret_key: str = "change-me-before-deployment"
 
-    # LLM
-    gemini_api_key: str | None = None
+    # AI (Gemini)
+    gemini_api_key: str = ""
 
     model_config = SettingsConfigDict(
         env_file=".env",
