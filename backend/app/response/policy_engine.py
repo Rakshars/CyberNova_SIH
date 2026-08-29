@@ -278,6 +278,7 @@ class SOARPolicyEngine:
                     auto_execute=p["auto_execute"]
                 ))
 
+        matched_policies = []
         for p in policies:
             if not p.enabled:
                 continue
@@ -297,85 +298,98 @@ class SOARPolicyEngine:
                     should_trigger = True
 
             if should_trigger:
-                action_id = str(uuid.uuid4())
-                target_val = incident.get("target_user") or incident.get("ip_address") or "System Asset"
-                status_val = "executed" if p.auto_execute else "pending"
-                reason_val = f"Triggered by policy '{p.name}': Risk Score {risk_score}, Event '{event_type}'"
-                now_str = datetime.utcnow().isoformat() + "Z"
+                matched_policies.append(p)
 
-                # AI second opinion: the static auto_execute flag above is the
-                # fail-safe default, used as-is if this call errors or the key
-                # is missing. When available, the model can additionally
-                # escalate an ambiguous match to a human or suppress a
-                # likely false positive instead of blindly auto-executing.
-                try:
-                    from app.response.ai_decision_engine import decide_action
-                    ai_decision = decide_action(
-                        incident,
-                        {"name": p.name, "action_type": p.action_type, "description": p.description},
-                    )
-                except Exception as ex:
-                    logger.error(f"AI decision layer error: {ex}")
-                    ai_decision = None
+        # AI second opinion: evaluate matched policies concurrently in parallel
+        from concurrent.futures import ThreadPoolExecutor, as_completed
+        def run_ai_triage(p):
+            try:
+                from app.response.ai_decision_engine import decide_action
+                return p.id, decide_action(
+                    incident,
+                    {"name": p.name, "action_type": p.action_type, "description": p.description},
+                )
+            except Exception as ex:
+                logger.error(f"AI decision layer error for policy {p.name}: {ex}")
+                return p.id, None
 
-                if ai_decision is not None:
-                    if ai_decision.decision == "suppress":
-                        status_val = "suppressed"
-                    elif ai_decision.decision == "escalate":
-                        status_val = "pending"
-                    else:
-                        status_val = "executed" if p.auto_execute else "pending"
-                    reason_val = (
-                        f"{reason_val}. AI triage (confidence {ai_decision.confidence:.0%}): {ai_decision.reasoning}"
-                    )
-
-                action = {
-                    "id": action_id,
-                    "policy_id": p.id,
-                    "policy_name": p.name,
-                    "action_type": p.action_type,
-                    "target": target_val,
-                    "status": status_val,
-                    "triggered_by": "Autonomous SOAR Engine",
-                    "reason": reason_val,
-                    "timestamp": now_str
-                }
-                triggered_actions.append(action)
-
-                # Persist to DB if requested and session is provided
-                if db is not None and commit:
+        ai_decisions = {}
+        if matched_policies:
+            with ThreadPoolExecutor(max_workers=min(len(matched_policies), 4)) as executor:
+                future_map = {executor.submit(run_ai_triage, p): p for p in matched_policies}
+                for future in as_completed(future_map):
                     try:
-                        # Ensure we have an incident DB record to link to
-                        db_inc_id = incident_id or incident.get("id")
-                        if db_inc_id:
-                            # Verify if the incident exists in the DB before inserting
-                            from app.models.incident import Incident as DBIncident
-                            inc_exists = db.query(DBIncident).filter(DBIncident.id == db_inc_id).first() is not None
-                            
-                            if inc_exists:
-                                db_action = ResponseAction(
-                                    id=action_id,
-                                    incident_id=db_inc_id,
-                                    action_type=p.action_type,
-                                    target=target_val,
-                                    status=status_val,
-                                    triggered_by="Autonomous SOAR Engine",
-                                    reason=reason_val,
-                                    policy_name=p.name,
-                                    executed_at=datetime.utcnow()
-                                )
-                                db.add(db_action)
-                                db.flush()
-                                logger.info(f"Persisted ResponseAction '{p.action_type}' for incident {db_inc_id} to DB.")
-                            else:
-                                logger.warning(f"Could not save ResponseAction to DB: incident '{db_inc_id}' not found in DB.")
-                        else:
-                            logger.warning("Could not save ResponseAction to DB: incident_id is missing.")
+                        pid, dec = future.result(timeout=3.5)
+                        ai_decisions[pid] = dec
                     except Exception as ex:
-                        logger.error(f"Error saving ResponseAction in evaluate_incident: {ex}")
+                        logger.error(f"AI triage execution timed out or failed: {ex}")
+
+        for p in matched_policies:
+            action_id = str(uuid.uuid4())
+            target_val = incident.get("target_user") or incident.get("ip_address") or "System Asset"
+            status_val = "executed" if p.auto_execute else "pending"
+            reason_val = f"Triggered by policy '{p.name}': Risk Score {risk_score}, Event '{event_type}'"
+            now_str = datetime.utcnow().isoformat() + "Z"
+
+            ai_decision = ai_decisions.get(p.id)
+            if ai_decision is not None:
+                if ai_decision.decision == "suppress":
+                    status_val = "suppressed"
+                elif ai_decision.decision == "escalate":
+                    status_val = "pending"
                 else:
-                    # In-memory logging fallback for simulation/test-trigger runs
-                    self.temp_execution_logs.insert(0, action)
+                    status_val = "executed" if p.auto_execute else "pending"
+                reason_val = (
+                    f"{reason_val}. AI triage (confidence {ai_decision.confidence:.0%}): {ai_decision.reasoning}"
+                )
+
+            action = {
+                "id": action_id,
+                "policy_id": p.id,
+                "policy_name": p.name,
+                "action_type": p.action_type,
+                "target": target_val,
+                "status": status_val,
+                "triggered_by": "Autonomous SOAR Engine",
+                "reason": reason_val,
+                "timestamp": now_str
+            }
+            triggered_actions.append(action)
+
+            # Persist to DB if requested and session is provided
+            if db is not None and commit:
+                try:
+                    # Ensure we have an incident DB record to link to
+                    db_inc_id = incident_id or incident.get("id")
+                    if db_inc_id:
+                        # Verify if the incident exists in the DB before inserting
+                        from app.models.incident import Incident as DBIncident
+                        inc_exists = db.query(DBIncident).filter(DBIncident.id == db_inc_id).first() is not None
+                        
+                        if inc_exists:
+                            db_action = ResponseAction(
+                                id=action_id,
+                                incident_id=db_inc_id,
+                                action_type=p.action_type,
+                                target=target_val,
+                                status=status_val,
+                                triggered_by="Autonomous SOAR Engine",
+                                reason=reason_val,
+                                policy_name=p.name,
+                                executed_at=datetime.utcnow()
+                            )
+                            db.add(db_action)
+                            db.flush()
+                            logger.info(f"Persisted ResponseAction '{p.action_type}' for incident {db_inc_id} to DB.")
+                        else:
+                            logger.warning(f"Could not save ResponseAction to DB: incident '{db_inc_id}' not found in DB.")
+                    else:
+                        logger.warning("Could not save ResponseAction to DB: incident_id is missing.")
+                except Exception as ex:
+                    logger.error(f"Error saving ResponseAction in evaluate_incident: {ex}")
+            else:
+                # In-memory logging fallback for simulation/test-trigger runs
+                self.temp_execution_logs.insert(0, action)
 
         return triggered_actions
 

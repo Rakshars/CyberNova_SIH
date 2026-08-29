@@ -21,6 +21,7 @@ settings = get_settings()
 connect_args = {}
 if settings.database_url.startswith("sqlite"):
     connect_args["check_same_thread"] = False
+    connect_args["timeout"] = 30.0
 
 engine = create_engine(
     settings.database_url,
@@ -28,12 +29,13 @@ engine = create_engine(
     echo=settings.debug,   # logs all SQL in development
 )
 
-# Enable SQLite foreign key enforcement (off by default in SQLite)
+# Enable SQLite foreign key enforcement and WAL mode for concurrent access
 if settings.database_url.startswith("sqlite"):
     @event.listens_for(engine, "connect")
     def set_sqlite_pragma(dbapi_connection, connection_record):
         cursor = dbapi_connection.cursor()
         cursor.execute("PRAGMA foreign_keys=ON")
+        cursor.execute("PRAGMA journal_mode=WAL")
         cursor.close()
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

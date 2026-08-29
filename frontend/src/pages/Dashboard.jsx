@@ -61,8 +61,11 @@ export default function Dashboard() {
     return () => clearInterval(interval)
   }, [])
 
+  const [activeAttackType, setActiveAttackType] = useState(null)
+
   const handleLaunchAttack = async (type) => {
     setTriggering(true)
+    setActiveAttackType(type)
     try {
       const res = await triggerRedTeamAttack(type)
       setActiveNetworkAttack({
@@ -79,6 +82,7 @@ export default function Dashboard() {
       alert(`Error triggering attack: ${err.message}`)
     } finally {
       setTriggering(false)
+      setActiveAttackType(null)
     }
   }
 
@@ -118,21 +122,27 @@ export default function Dashboard() {
           Click any scenario to trigger synthetic threats and watch CyberNova contain them live.
         </p>
         <div className="attack-btn-row">
-          {ATTACKS.map(({ type, label, color, dimColor }) => (
-            <button
-              key={type}
-              className="btn attack-btn"
-              disabled={triggering}
-              onClick={() => handleLaunchAttack(type)}
-              style={{
-                fontSize: 12, background: dimColor,
-                border: `1px solid ${color}`,
-                color: 'var(--text)'
-              }}
-            >
-              {label}
-            </button>
-          ))}
+          {ATTACKS.map(({ type, label, color, dimColor }) => {
+            const isThisTriggering = activeAttackType === type
+            return (
+              <button
+                key={type}
+                className="btn attack-btn"
+                disabled={triggering}
+                onClick={() => handleLaunchAttack(type)}
+                style={{
+                  fontSize: 12,
+                  background: isThisTriggering ? 'var(--red-dim)' : dimColor,
+                  border: `1px solid ${isThisTriggering ? 'var(--red)' : color}`,
+                  color: 'var(--text)',
+                  opacity: triggering && !isThisTriggering ? 0.5 : 1,
+                  cursor: triggering ? 'wait' : 'pointer'
+                }}
+              >
+                {isThisTriggering ? '⚡ Launching Attack...' : label}
+              </button>
+            )
+          })}
         </div>
       </div>
 
