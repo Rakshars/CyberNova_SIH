@@ -1,0 +1,6 @@
+services:
+  kafka:
+    image: apache/kafka:latest
+    container_name: cybernova-kafka-broker
+    ports:
+      - "9092:9092"

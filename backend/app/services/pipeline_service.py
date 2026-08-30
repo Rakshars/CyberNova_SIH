@@ -121,13 +121,17 @@ def process_single_event(event: dict, db: Session, baselines: dict | None = None
     if detector.model is None:
         detector.load()
     if detector.model is not None:
-        event = detector.predict_single(event)
+        if "ml_anomaly_score" not in event or "is_anomaly" not in event:
+            event = detector.predict_single(event)
     else:
-        event["ml_anomaly_score"] = 0.0
-        event["is_anomaly"] = 0
+        if "ml_anomaly_score" not in event:
+            event["ml_anomaly_score"] = 0.0
+        if "is_anomaly" not in event:
+            event["is_anomaly"] = 0
 
     # Risk scoring
-    event = compute_risk_score(event)
+    if "risk_score" not in event:
+        event = compute_risk_score(event)
 
     # Plain-English summary
     event["summary"] = summarize_event(event)
@@ -157,7 +161,7 @@ def _dict_to_security_event(d: dict) -> SecurityEvent:
         ts = ts.to_pydatetime()
 
     return SecurityEvent(
-        id=str(uuid.uuid4()),
+        id=str(d.get("id")) if d.get("id") else (str(d.get("event_id")) if d.get("event_id") else str(uuid.uuid4())),
         event_type=d.get("event_type", "auth"),
         timestamp=ts,
         username=str(d.get("username", "")),

@@ -32,6 +32,12 @@ class Settings(BaseSettings):
     # AI (Gemini)
     gemini_api_key: str = ""
 
+    # Kafka
+    kafka_brokers: str = "localhost:9092"
+    kafka_topic_security_events: str = "security-events"
+    kafka_consumer_group: str = "cybernova-blue-team"
+    kafka_producer_url: str = "http://localhost:9093"
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",

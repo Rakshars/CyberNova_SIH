@@ -33,12 +33,16 @@ def create_incident_from_event(event: SecurityEvent, db: Session) -> Incident:
     inc_uuid = str(uuid.uuid4())
     inc_id_str = _next_incident_id(db)
 
+    # Check for simulated title and attack type overrides in raw_payload
+    sim_title = event.raw_payload.get("simulated_title") if isinstance(event.raw_payload, dict) else None
+    sim_event_type = event.raw_payload.get("simulated_event_type") if isinstance(event.raw_payload, dict) else None
+
     incident_payload = {
         "id": inc_uuid,
-        "title": f"Suspicious activity by {event.username} from {event.country}",
+        "title": sim_title or f"Suspicious activity by {event.username} from {event.country}",
         "risk_score": event.risk_score or 0,
         "severity": (event.risk_level.upper() if event.risk_level else "MEDIUM"),
-        "event_type": event.event_type or "",
+        "event_type": sim_event_type or event.event_type or "",
         "target_user": event.username,
         "ip_address": event.ip_address
     }
@@ -53,7 +57,7 @@ def create_incident_from_event(event: SecurityEvent, db: Session) -> Incident:
         id=inc_uuid,
         incident_id=inc_id_str,
         title=incident_payload["title"],
-        incident_type=event.event_type or "auth_anomaly",
+        incident_type=incident_payload["event_type"],
         status="open",
         severity=incident_payload["severity"],
         risk_score=incident_payload["risk_score"],
