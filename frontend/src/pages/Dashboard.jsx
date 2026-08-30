@@ -7,6 +7,8 @@ import { SeverityBadge, StatusBadge } from '../components/Badge'
 import NetworkAttackModal from '../components/NetworkAttackModal'
 import { Zap, Shield, Brain, TrendingUp, AlertTriangle, Terminal } from 'lucide-react'
 
+import LiveSOARTerminal from '../components/LiveSOARTerminal'
+
 function fmt(n) {
   if (n == null) return '—'
   if (n >= 1000) return (n / 1000).toFixed(1) + 'k'
@@ -68,13 +70,14 @@ export default function Dashboard() {
     setActiveAttackType(type)
     try {
       const res = await triggerRedTeamAttack(type)
-      setActiveNetworkAttack({
+      const attackPayload = {
         attack_type: res.attack_type,
         target_user: res.target_user,
         attacker_ip: res.attacker_ip,
         incident: res.incident_summary,
         actions: res.soar_autonomous_actions
-      })
+      }
+      setActiveNetworkAttack(attackPayload)
       setAttackToast(`🚨 LIVE ATTACK LAUNCHED: ${res.incident_summary.title} | SOAR CONTAINMENT: ${res.soar_autonomous_actions.length} ACTIONS AUTO-EXECUTED`)
       refreshData()
       setTimeout(() => setAttackToast(null), 7000)
@@ -116,10 +119,10 @@ export default function Dashboard() {
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
           <Terminal size={14} color="var(--red)" />
           <span style={{ fontWeight: 700, fontSize: 13, color: 'var(--text)' }}>Live Red Team Demo Attack Launcher</span>
-          <span className="badge badge-critical" style={{ fontSize: 10 }}>Interactive Mesh Animation</span>
+          <span className="badge badge-critical" style={{ fontSize: 10 }}>Interactive Mesh &amp; Execution Stream</span>
         </div>
         <p style={{ fontSize: 12, color: 'var(--text-2)', marginBottom: 12 }}>
-          Click any scenario to trigger synthetic threats and watch CyberNova contain them live.
+          Click any scenario to trigger synthetic threats and watch CyberNova contain them live step-by-step.
         </p>
         <div className="attack-btn-row">
           {ATTACKS.map(({ type, label, color, dimColor }) => {
@@ -243,6 +246,11 @@ export default function Dashboard() {
             }
           </div>
         </div>
+      </div>
+
+      {/* Live Terminal & Backend Execution Stream */}
+      <div style={{ marginBottom: 20 }}>
+        <LiveSOARTerminal activeTrace={activeNetworkAttack} height={340} />
       </div>
 
       {/* Recent Incidents */}

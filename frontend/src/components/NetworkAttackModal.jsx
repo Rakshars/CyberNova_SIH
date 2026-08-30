@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { getUsers } from '../api'
+import LiveSOARTerminal from './LiveSOARTerminal'
 
 export default function NetworkAttackModal({ attackInfo, onClose }) {
   const [stage, setStage] = useState(1)
@@ -298,6 +299,11 @@ export default function NetworkAttackModal({ attackInfo, onClose }) {
               </div>
             )
           })}
+        </div>
+
+        {/* Live Backend Process Trace Log Terminal */}
+        <div style={{ marginBottom: 14 }}>
+          <LiveSOARTerminal activeTrace={attackInfo} height={180} />
         </div>
 
         {/* Footer */}

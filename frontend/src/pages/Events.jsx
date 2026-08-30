@@ -1,6 +1,8 @@
 import { useEffect, useState, useCallback } from 'react'
 import { getEvents } from '../api'
 import { RiskBadge, AnomalyBadge } from '../components/Badge'
+import LiveSOARTerminal from '../components/LiveSOARTerminal'
+import { Table, Terminal } from 'lucide-react'
 
 const PAGE_SIZE = 50
 
@@ -17,6 +19,7 @@ export default function Events() {
   const [riskLevel, setRiskLevel] = useState('')
   const [eventType, setEventType] = useState('')
   const [isAnomaly, setIsAnomaly] = useState(false)
+  const [viewMode, setViewMode] = useState('table') // 'table' or 'terminal'
 
   const load = useCallback(() => {
     setLoading(true)
@@ -33,34 +36,72 @@ export default function Events() {
 
   return (
     <div>
-      <div className="page-header">
-        <h1>Events</h1>
-        <p>{data.total} total security events</p>
+      <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12 }}>
+        <div>
+          <h1>Events Feed &amp; Live SOC Stream</h1>
+          <p>{data.total} total security events monitored</p>
+        </div>
+
+        {/* View Mode Toggle */}
+        <div style={{ display: 'flex', background: 'var(--surface-2)', padding: 3, borderRadius: 8, border: '1px solid var(--border)' }}>
+          <button
+            onClick={() => setViewMode('table')}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              fontSize: 12, fontWeight: 600, padding: '5px 12px', borderRadius: 6,
+              background: viewMode === 'table' ? '#3b82f6' : 'transparent',
+              color: viewMode === 'table' ? '#fff' : 'var(--text-3)',
+              border: 'none', cursor: 'pointer'
+            }}
+          >
+            <Table size={13} />
+            <span>Table View</span>
+          </button>
+          <button
+            onClick={() => setViewMode('terminal')}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              fontSize: 12, fontWeight: 600, padding: '5px 12px', borderRadius: 6,
+              background: viewMode === 'terminal' ? '#3b82f6' : 'transparent',
+              color: viewMode === 'terminal' ? '#fff' : 'var(--text-3)',
+              border: 'none', cursor: 'pointer'
+            }}
+          >
+            <Terminal size={13} />
+            <span>Live Terminal Feed</span>
+          </button>
+        </div>
       </div>
 
-      <div className="filters">
-        <select className="filter-select" value={riskLevel} onChange={e => { setRiskLevel(e.target.value); setPage(1) }}>
-          <option value="">All risk levels</option>
-          <option>Critical</option>
-          <option>High</option>
-          <option>Medium</option>
-          <option>Low</option>
-        </select>
-        <select className="filter-select" value={eventType} onChange={e => { setEventType(e.target.value); setPage(1) }}>
-          <option value="">All event types</option>
-          <option>auth</option>
-          <option>access</option>
-          <option>network</option>
-          <option>file</option>
-          <option>process</option>
-        </select>
-        <button
-          className={`toggle-btn${isAnomaly ? ' active' : ''}`}
-          onClick={() => { setIsAnomaly(v => !v); setPage(1) }}
-        >
-          Anomalies only
-        </button>
-      </div>
+      {viewMode === 'terminal' ? (
+        <div style={{ marginTop: 10 }}>
+          <LiveSOARTerminal height={520} />
+        </div>
+      ) : (
+        <>
+          <div className="filters">
+            <select className="filter-select" value={riskLevel} onChange={e => { setRiskLevel(e.target.value); setPage(1) }}>
+              <option value="">All risk levels</option>
+              <option>Critical</option>
+              <option>High</option>
+              <option>Medium</option>
+              <option>Low</option>
+            </select>
+            <select className="filter-select" value={eventType} onChange={e => { setEventType(e.target.value); setPage(1) }}>
+              <option value="">All event types</option>
+              <option>auth</option>
+              <option>access</option>
+              <option>network</option>
+              <option>file</option>
+              <option>process</option>
+            </select>
+            <button
+              className={`toggle-btn${isAnomaly ? ' active' : ''}`}
+              onClick={() => { setIsAnomaly(v => !v); setPage(1) }}
+            >
+              Anomalies only
+            </button>
+          </div>
 
       <div className="card" style={{ padding: 0 }}>
         <div className="table-wrap">
@@ -113,6 +154,8 @@ export default function Events() {
           </div>
         </div>
       </div>
+      </>
+      )}
     </div>
   )
 }

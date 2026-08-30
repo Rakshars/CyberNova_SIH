@@ -86,7 +86,15 @@ def generate_text(
     if client is None:
         return None
     try:
-        response = client.models.generate_content(model=model, contents=prompt)
+        from google.genai import types
+        response = client.models.generate_content(
+            model=model,
+            contents=prompt,
+            config=types.GenerateContentConfig(
+                temperature=temperature,
+                http_options=types.HttpOptions(timeout=10000)
+            )
+        )
         return response.text
     except Exception as e:
         logger.error("Gemini text call failed: %s", e)
