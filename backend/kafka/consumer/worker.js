@@ -74,9 +74,29 @@ async function startConsumer() {
     }
   }
 
+  // Ensure topic exists before subscribing
+  const admin = kafka.admin();
+  try {
+    console.log(`[CONSUMER] Ensuring topic "${config.topic}" exists...`);
+    await admin.connect();
+    const existingTopics = await admin.listTopics();
+    if (!existingTopics.includes(config.topic)) {
+      await admin.createTopics({
+        topics: [{ topic: config.topic, numPartitions: 1, replicationFactor: 1 }],
+      });
+      console.log(`[CONSUMER] Topic "${config.topic}" created successfully.`);
+    } else {
+      console.log(`[CONSUMER] Topic "${config.topic}" already exists.`);
+    }
+    await admin.disconnect();
+  } catch (err) {
+    console.warn(`[CONSUMER] Topic check/creation warning: ${err.message}`);
+  }
+
   try {
     console.log(`[CONSUMER] Subscribing to topic: "${config.topic}"...`);
     await consumer.subscribe({ topic: config.topic, fromBeginning: false });
+
 
     console.log(`[CONSUMER] Initializing message read loop...`);
     await consumer.run({

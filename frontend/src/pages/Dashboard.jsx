@@ -47,13 +47,13 @@ export default function Dashboard() {
 
   const refreshData = () => {
     Promise.all([
-      getDashboardSummary(),
-      getDashboardLivePanels(),
-      getIncidents({ page: 1, page_size: 5 }),
+      getDashboardSummary().catch(err => { console.error('Summary fetch error:', err); return null }),
+      getDashboardLivePanels().catch(err => { console.error('LivePanels fetch error:', err); return null }),
+      getIncidents({ page: 1, page_size: 5 }).catch(err => { console.error('Incidents fetch error:', err); return { items: [] } }),
     ]).then(([s, panels, i]) => {
-      setSummary(s)
-      setLivePanels(panels)
-      setRecentIncidents(i.items)
+      if (s) setSummary(s)
+      if (panels) setLivePanels(panels)
+      if (i && i.items) setRecentIncidents(i.items)
     }).finally(() => setLoading(false))
   }
 

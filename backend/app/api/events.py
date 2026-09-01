@@ -393,8 +393,11 @@ def trigger_simulated_attack(attack_type: str = Query(..., description="brute_fo
     if not kafka_pushed:
         return _run_synced_attack(attack_type, target_user, attacker_ip, event_dict, incident_payload, db)
 
-    # Poll DB for up to 5 seconds to wait for async consumer to persist event & incident
+    # Release any existing transaction lock so consumer POST can commit to SQLite freely
+    db.rollback()
+
     poll_start = time.time()
+    from app.database import SessionLocal
     from app.models.incident import Incident
     from app.models.security_event import SecurityEvent
 
@@ -402,48 +405,52 @@ def trigger_simulated_attack(attack_type: str = Query(..., description="brute_fo
     time.sleep(0.05)
 
     while time.time() - poll_start < 5.0:
-        db_evt = db.query(SecurityEvent).filter(SecurityEvent.id == event_id).first()
-        if db_evt and db_evt.incident_id:
-            db_inc = db.query(Incident).filter(Incident.id == db_evt.incident_id).first()
-            if db_inc:
-                logger.info(f"[KAFKA] Poll success: Found event {event_id} processed by consumer in {round(time.time() - poll_start, 2)}s")
-                # Retrieve associated response actions
-                actions = []
-                if hasattr(db_inc, "actions") and db_inc.actions:
-                    actions = [
-                        {
-                            "id": act.id,
-                            "action_type": act.action_type,
-                            "target": act.target,
-                            "status": act.status,
-                            "reason": act.reason,
-                            "policy_name": act.policy_name
-                        }
-                        for act in db_inc.actions
-                    ]
-                else:
-                    # Fallback to response_taken if ORM relation not initialized
-                    actions = db_inc.response_taken or []
+        check_db = SessionLocal()
+        try:
+            db_evt = check_db.query(SecurityEvent).filter(SecurityEvent.id == event_id).first()
+            if db_evt and db_evt.incident_id:
+                db_inc = check_db.query(Incident).filter(Incident.id == db_evt.incident_id).first()
+                if db_inc:
+                    logger.info(f"[KAFKA] Poll success: Found event {event_id} processed by consumer in {round(time.time() - poll_start, 2)}s")
+                    actions = []
+                    if hasattr(db_inc, "actions") and db_inc.actions:
+                        actions = [
+                            {
+                                "id": act.id,
+                                "action_type": act.action_type,
+                                "target": act.target,
+                                "status": act.status,
+                                "reason": act.reason,
+                                "policy_name": act.policy_name
+                            }
+                            for act in db_inc.actions
+                        ]
+                    else:
+                        actions = db_inc.response_taken or []
 
-                return {
-                    "status": "Attack Triggered Live",
-                    "attack_type": attack_type,
-                    "target_user": target_user,
-                    "attacker_ip": attacker_ip,
-                    "simulated_event": event_dict,
-                    "incident_summary": {
-                        "title": db_inc.title,
-                        "risk_score": db_inc.risk_score,
-                        "severity": db_inc.severity,
-                        "event_type": db_inc.incident_type,
-                        "target_user": db_inc.affected_username,
-                        "ip_address": db_inc.affected_ip
-                    },
-                    "soar_autonomous_actions": actions,
-                    "new_incident_id": db_inc.incident_id
-                }
-        time.sleep(0.08)
-        db.expire_all()
+                    res_data = {
+                        "status": "Attack Triggered Live",
+                        "attack_type": attack_type,
+                        "target_user": target_user,
+                        "attacker_ip": attacker_ip,
+                        "simulated_event": event_dict,
+                        "incident_summary": {
+                            "title": db_inc.title,
+                            "risk_score": db_inc.risk_score,
+                            "severity": db_inc.severity,
+                            "event_type": db_inc.incident_type,
+                            "target_user": db_inc.affected_username,
+                            "ip_address": db_inc.affected_ip
+                        },
+                        "soar_autonomous_actions": actions,
+                        "new_incident_id": db_inc.incident_id
+                    }
+                    check_db.close()
+                    return res_data
+        finally:
+            check_db.close()
+
+        time.sleep(0.1)
 
     logger.warning(f"[KAFKA] Async pipeline execution timed out for {event_id}. Running synchronous fallback.")
     return _run_synced_attack(attack_type, target_user, attacker_ip, event_dict, incident_payload, db)
