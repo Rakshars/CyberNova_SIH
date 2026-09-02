@@ -46,6 +46,10 @@ venv.bak/
 
 # SQLite Database & Storage (Local runtime state)
 *.db
+*.db-shm
+*.db-wal
+*.db-journal
+*.db.corrupt
 *.sqlite
 *.sqlite3
 backend/*.db
