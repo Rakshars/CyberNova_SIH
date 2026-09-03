@@ -162,12 +162,13 @@ def query_copilot(payload: QueryRequest, db: Session = Depends(get_db)):
         try:
             system_prompt = (
                 "You are CyberNova Sentinel, an elite AI Autonomous SOC Assistant. "
-                "Answer the user's question concisely using ONLY the provided Live SOC Telemetry Data context. "
-                "If the context does not contain the answer, say you don't have enough current telemetry to answer. "
-                "Format your response nicely with Markdown bullet points or bold text."
+                "If the analyst asks a greeting or identity question (such as 'who are you', 'hi', 'what is your name'), "
+                "introduce yourself warmly as CyberNova Sentinel and offer to assist with security incidents, telemetry, or SOAR playbooks. "
+                "For security and telemetry questions, answer concisely using standard Markdown bullet lists (e.g., '- **Label:** Value') with clear line breaks. "
+                "Do NOT use unicode bullet symbols like '•'. Use clean, standard markdown lists with bold labels."
             )
             full_prompt = f"{system_prompt}\n\n{context_str}\n\nAnalyst Question: {q}"
-            response_text = generate_text(full_prompt, model="gemini-3.6-flash")
+            response_text = generate_text(full_prompt, model="gemini-3.5-flash")
         except Exception as e:
             pass
 
@@ -177,6 +178,10 @@ def query_copilot(payload: QueryRequest, db: Session = Depends(get_db)):
             f"{fallback_ans}\n\n"
             "*(Note: Powered by CyberNova Local Telemetry RAG Engine)*"
         )
+
+    # Normalize bullet points for clean markdown rendering
+    if response_text:
+        response_text = response_text.replace("• ", "- ")
 
     return {
         "query": payload.query,

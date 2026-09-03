@@ -98,7 +98,20 @@ export default function CopilotDrawer({ isOpen, onClose }) {
               lineHeight: 1.6,
               border: m.sender === 'user' ? 'none' : '1px solid var(--border)',
             }}>
-              {m.sender === 'user' ? m.text : <ReactMarkdown>{m.text}</ReactMarkdown>}
+              {m.sender === 'user' ? (
+                m.text
+              ) : (
+                <ReactMarkdown
+                  components={{
+                    p: ({ children }) => <p style={{ margin: '0 0 6px 0', lineHeight: 1.5 }}>{children}</p>,
+                    ul: ({ children }) => <ul style={{ margin: '4px 0 6px 0', paddingLeft: 18, listStyleType: 'disc' }}>{children}</ul>,
+                    ol: ({ children }) => <ol style={{ margin: '4px 0 6px 0', paddingLeft: 18 }}>{children}</ol>,
+                    li: ({ children }) => <li style={{ marginBottom: 4, lineHeight: 1.4 }}>{children}</li>,
+                  }}
+                >
+                  {m.text?.replace(/• /g, '- ')}
+                </ReactMarkdown>
+              )}
             </div>
             {m.actions?.length > 0 && (
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginTop: 8 }}>
