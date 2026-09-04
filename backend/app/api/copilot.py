@@ -168,7 +168,7 @@ def query_copilot(payload: QueryRequest, db: Session = Depends(get_db)):
                 "Do NOT use unicode bullet symbols like '•'. Use clean, standard markdown lists with bold labels."
             )
             full_prompt = f"{system_prompt}\n\n{context_str}\n\nAnalyst Question: {q}"
-            response_text = generate_text(full_prompt, model="gemini-3.5-flash")
+            response_text = generate_text(full_prompt, model="gemini-2.5-flash")
         except Exception as e:
             pass
 
