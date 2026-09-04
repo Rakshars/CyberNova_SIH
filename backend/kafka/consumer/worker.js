@@ -3,10 +3,19 @@ const urlModule = require('url');
 const config = require('../config');
 
 // Initialize Kafka client
-const kafka = new Kafka({
+const kafkaOptions = {
   clientId: 'cybernova-consumer-worker',
   brokers: config.brokers
-});
+};
+if (config.ssl) kafkaOptions.ssl = true;
+if (config.saslUser && config.saslPassword) {
+  kafkaOptions.sasl = {
+    mechanism: config.saslMechanism,
+    username: config.saslUser,
+    password: config.saslPassword
+  };
+}
+const kafka = new Kafka(kafkaOptions);
 
 const consumer = kafka.consumer({ groupId: config.consumerGroup });
 

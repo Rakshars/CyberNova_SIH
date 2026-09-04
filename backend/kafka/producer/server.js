@@ -6,14 +6,23 @@ const app = express();
 app.use(express.json());
 
 // Initialize Kafka client
-const kafka = new Kafka({
+const kafkaOptions = {
   clientId: 'cybernova-producer-bridge',
   brokers: config.brokers,
   retry: {
     initialRetryTime: 300,
     retries: 3
   }
-});
+};
+if (config.ssl) kafkaOptions.ssl = true;
+if (config.saslUser && config.saslPassword) {
+  kafkaOptions.sasl = {
+    mechanism: config.saslMechanism,
+    username: config.saslUser,
+    password: config.saslPassword
+  };
+}
+const kafka = new Kafka(kafkaOptions);
 
 const producer = kafka.producer();
 let isProducerConnected = false;

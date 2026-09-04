@@ -12,10 +12,6 @@ services:
         value: "false"
       - key: DATABASE_URL
         value: sqlite:///./autonomous_soc.db
-      # Set this to the frontend's public URL after both services deploy
-      # once, e.g. https://cybernova-frontend.onrender.com — Render's
-      # fromService only exposes the private-network address, which the
-      # browser can't reach, so this has to be the real public origin.
       - key: CORS_ORIGINS
         sync: false
       - key: SECRET_KEY
@@ -26,14 +22,6 @@ services:
         value: "0.08"
       - key: RISK_THRESHOLD
         value: "40"
-      - key: KAFKA_BROKERS
-        value: localhost:9092
-      - key: KAFKA_TOPIC_SECURITY_EVENTS
-        value: security-events
-      - key: KAFKA_CONSUMER_GROUP
-        value: cybernova-blue-team
-      - key: KAFKA_PRODUCER_URL
-        value: http://localhost:9093
 
   - name: cybernova-frontend
     type: web
@@ -42,9 +30,10 @@ services:
     buildCommand: npm install && npm run build
     staticPublishPath: dist
     envVars:
-      # Set this to the backend's public URL after it first deploys,
-      # e.g. https://cybernova-backend.onrender.com (no trailing slash).
-      # Static sites are pre-built, so a later change here requires
-      # triggering a manual redeploy of this service to take effect.
       - key: VITE_API_URL
-        sync: false
+        fromService:
+          type: web
+          name: cybernova-backend
+          property: url
+
+

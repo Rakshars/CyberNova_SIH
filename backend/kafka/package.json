@@ -4,6 +4,7 @@
   "description": "Kafka integration bridge for CyberNova SOC & Forensics Simulator",
   "main": "index.js",
   "scripts": {
+    "start": "node producer/server.js & node consumer/worker.js",
     "producer": "node producer/server.js",
     "consumer": "node consumer/worker.js"
   },
