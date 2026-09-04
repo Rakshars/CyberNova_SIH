@@ -1,6 +1,8 @@
 /* api.js — all fetch calls to the backend */
 
-const BASE = '/api';
+// In dev, Vite proxies '/api' to the local backend (see vite.config.js).
+// In production, set VITE_API_URL to the deployed backend's origin.
+const BASE = (import.meta.env.VITE_API_URL || '') + '/api';
 
 async function get(path) {
   const res = await fetch(BASE + path);
