@@ -77,10 +77,14 @@ def analyze_image_bytes(content: bytes) -> dict:
             "h_pct": h / img_h * 100,
         }
 
+    import gc
     pil_img = Image.open(io.BytesIO(content)).convert("RGB")
     x_tensor = get_preprocess()(pil_img).unsqueeze(0)
     with torch.no_grad():
         score = torch.sigmoid(get_model()(x_tensor)).item()
+
+    del x_tensor, pil_img, img_cv, arr
+    gc.collect()
 
     return {"fake_probability": score, "bbox": bbox}
 
