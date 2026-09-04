@@ -31,9 +31,7 @@ services:
     staticPublishPath: dist
     envVars:
       - key: VITE_API_URL
-        fromService:
-          type: web
-          name: cybernova-backend
-          property: url
+        sync: false
+
 
 
