@@ -394,7 +394,7 @@ def trigger_simulated_attack(attack_type: str = Query(..., description="brute_fo
         return _run_synced_attack(attack_type, target_user, attacker_ip, event_dict, incident_payload, db)
 
     # Release any existing transaction lock so consumer POST can commit to SQLite freely
-    db.rollback()
+    db.close()
 
     poll_start = time.time()
     from app.database import SessionLocal
@@ -453,7 +453,12 @@ def trigger_simulated_attack(attack_type: str = Query(..., description="brute_fo
         time.sleep(0.1)
 
     logger.warning(f"[KAFKA] Async pipeline execution timed out for {event_id}. Running synchronous fallback.")
-    return _run_synced_attack(attack_type, target_user, attacker_ip, event_dict, incident_payload, db)
+    fallback_db = SessionLocal()
+    try:
+        return _run_synced_attack(attack_type, target_user, attacker_ip, event_dict, incident_payload, fallback_db)
+    finally:
+        fallback_db.close()
+
 
 
 

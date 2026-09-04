@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { simulateEvent, triggerSimulatedAttack, getUsers } from '../api'
-import { Terminal, Send, Zap, AlertTriangle, CheckCircle2, ChevronRight, User, RefreshCw, Crosshair } from 'lucide-react'
+import { Terminal, Send, Zap, AlertTriangle, CheckCircle2, ChevronRight, User, RefreshCw, Crosshair, Upload, FileCode, FileText } from 'lucide-react'
 import NetworkAttackModal from '../components/NetworkAttackModal'
 
 const ATTACK_VECTORS = [
@@ -75,7 +75,9 @@ export default function Simulator() {
   const [usersList, setUsersList]       = useState([])
   const [stagedCmd, setStagedCmd]       = useState('')
   const [pendingAction, setPendingAction] = useState(null)
+  const [uploadedFile, setUploadedFile] = useState(null)
   const terminalInputRef = useRef(null)
+  const fileInputRef = useRef(null)
 
   const [logs, setLogs] = useState([
     { t: 'INIT',  msg: 'Red Team C2 environment ready.', type: 'info' },
@@ -175,12 +177,58 @@ export default function Simulator() {
       executeStagedCommand()
       return
     }
-    const cmd = buildInjectCmd(form)
-    setStagedCmd(cmd)
     setPendingAction({ type: 'inject', payload: { ...form } })
     addLog(`[SYS] Staged custom payload command: ${cmd}`, 'warn')
     addLog(`[SYS] Press ENTER key in terminal to execute payload!`, 'info')
     setTimeout(() => { if (terminalInputRef.current) terminalInputRef.current.focus() }, 50)
+  }
+
+  // Handle Custom Attack Script File Upload
+  const handleCustomFileUpload = (e) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    const ext = file.name.split('.').pop()?.toLowerCase()
+    let autoCmd = `./${file.name}`
+
+    if (ext === 'py') {
+      autoCmd = `python3 ./${file.name}`
+    } else if (ext === 'sh' || ext === 'bash') {
+      autoCmd = `./${file.name}`
+    } else if (ext === 'js') {
+      autoCmd = `node ./${file.name}`
+    } else if (ext === 'rb') {
+      autoCmd = `ruby ./${file.name}`
+    } else if (ext === 'go') {
+      autoCmd = `go run ./${file.name}`
+    } else if (ext === 'c' || ext === 'cpp') {
+      autoCmd = `./${file.name.split('.')[0]}`
+    }
+
+    setUploadedFile({
+      name: file.name,
+      size: file.size,
+      type: ext,
+      cmd: autoCmd
+    })
+
+    // Read content to infer attack type
+    const reader = new FileReader()
+    reader.onload = (event) => {
+      const content = event.target?.result || ''
+      setStagedCmd(autoCmd)
+      setPendingAction({
+        type: 'file_script',
+        file: file.name,
+        cmd: autoCmd,
+        content: content
+      })
+      addLog(`[SYS] Custom Exploit Script Uploaded: '${file.name}' (${(file.size/1024).toFixed(1)} KB)`, 'warn')
+      addLog(`[SYS] Staged command: ${autoCmd}`, 'warn')
+      addLog(`[SYS] Press ENTER key in terminal to execute custom attack script!`, 'info')
+      setTimeout(() => { if (terminalInputRef.current) terminalInputRef.current.focus() }, 50)
+    }
+    reader.readAsText(file)
   }
 
   // Execute the staged command when ENTER key is pressed
@@ -217,9 +265,82 @@ export default function Simulator() {
       await runVectorExecution(actionToRun.id, cmdToRun)
     } else if (actionToRun?.type === 'inject') {
       await runInjectExecution(actionToRun.payload || form, cmdToRun)
+    } else if (actionToRun?.type === 'file_script') {
+      await runFileScriptExecution(actionToRun, cmdToRun)
     } else {
       // Freeform typed CLI command (e.g. "hi, hello")
       addLog(`[C2] Command dispatched to red team agents: ${cmdToRun}`, 'warn')
+    }
+  }
+
+  const runFileScriptExecution = async (scriptAction, cliCmd) => {
+    setLoading(true); setResult(null)
+    const fileName = scriptAction.file || 'custom_exploit.py'
+    const scriptContent = (scriptAction.content || '').toLowerCase()
+    
+    // Infer vector type from uploaded script code keywords
+    let attackType = 'brute_force'
+    let eventType = 'custom_script_exploit'
+    let riskScore = 95
+    let title = `Custom Exploit Script Execution: ${fileName}`
+
+    if (scriptContent.includes('upi') || scriptContent.includes('vpa') || scriptContent.includes('debit')) {
+      attackType = 'upi_fraud'
+      title = `Custom UPI Fraud Script: ${fileName}`
+      riskScore = 92
+    } else if (scriptContent.includes('wiper') || scriptContent.includes('ransom') || scriptContent.includes('vssadmin') || scriptContent.includes('encrypt')) {
+      attackType = 'deepfake_wire'
+      title = `Custom System Wiper & Ransomware Script: ${fileName}`
+      riskScore = 98
+    } else if (scriptContent.includes('phish') || scriptContent.includes('sms') || scriptContent.includes('kyc')) {
+      attackType = 'phishing_blast'
+      title = `Custom Phishing Bot Script: ${fileName}`
+      riskScore = 88
+    }
+
+    addLog(`[ATK] Executing custom attack script '${fileName}' via C2 agent...`, 'warn')
+
+    try {
+      // Trigger via backend simulator API
+      const res = await triggerSimulatedAttack(attackType)
+      const targetUser = res.target_user || form.username || 'meera'
+      const attackerIp = res.attacker_ip || form.ip_address || '185.220.194.14'
+
+      const customScriptTrace = {
+        target_user: targetUser,
+        attacker_ip: attackerIp,
+        cliCommand: cliCmd,
+        incident: {
+          title: title,
+          id: res.new_incident_id || 'INC-CUSTOM-SCRIPT',
+          risk_score: riskScore,
+          event_type: eventType
+        },
+        actions: res.soar_autonomous_actions || [
+          { action_type: 'QUARANTINE_USER', target: targetUser, reason: 'Custom Exploit Script Detected' },
+          { action_type: 'BLOCK_IP', target: attackerIp, reason: 'Edge Firewall Null-Route' },
+          { action_type: 'ALERT_SOC', target: 'SOC Command Channel', reason: 'High Risk Incident Created' }
+        ],
+        ts: Date.now()
+      }
+
+      window.dispatchEvent(new CustomEvent('cybernova_attack_trace', { detail: customScriptTrace }))
+      try {
+        sessionStorage.setItem('cybernova_latest_attack', JSON.stringify(customScriptTrace))
+        localStorage.setItem('cybernova_latest_attack', JSON.stringify(customScriptTrace))
+      } catch(e){}
+      try {
+        const channel = new BroadcastChannel('cybernova_soc_feed')
+        channel.postMessage({ type: 'cybernova_attack_trace', detail: customScriptTrace })
+        channel.close()
+      } catch(e){}
+
+      addLog(`[OK] Script execution finished → Incident Created: '${title}'`, 'error')
+      addLog(`[OK] SOAR autonomous playbooks deployed live containment blocks!`, 'success')
+    } catch (err) {
+      addLog(`Script execution error: ${err.message}`, 'error')
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -667,6 +788,57 @@ export default function Simulator() {
               }} />
             )}
           </form>
+
+          {/* File Upload Dropzone Below Terminal */}
+          <div style={{
+            borderTop: `1px dashed ${C.surfaceBorder}`,
+            padding: '12px 14px',
+            background: 'rgba(232,108,42,0.03)',
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12
+          }}>
+            <input
+              type="file"
+              ref={fileInputRef}
+              onChange={handleCustomFileUpload}
+              accept=".py,.sh,.bash,.js,.rb,.go,.c,.cpp"
+              style={{ display: 'none' }}
+            />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div style={{
+                width: 32, height: 32, borderRadius: 6,
+                background: C.accentDim, border: `1px solid ${C.accentBorder}`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center'
+              }}>
+                <Upload size={16} color={C.accent} />
+              </div>
+              <div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: C.text, display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <span>Upload Custom Exploit Script</span>
+                  <span style={{ fontSize: 9, color: C.accent, background: C.accentDim, border: `1px solid ${C.accentBorder}`, padding: '1px 5px', borderRadius: 3 }}>
+                    .py · .sh · .bash · .js
+                  </span>
+                </div>
+                <div style={{ fontSize: 10, color: C.textMuted, marginTop: 1 }}>
+                  {uploadedFile ? `Active File: ${uploadedFile.name} (${uploadedFile.cmd})` : 'Select any .py or .sh attack script to auto-generate terminal execution command'}
+                </div>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              style={{
+                background: C.accentDim, border: `1px solid ${C.accentBorder}`,
+                color: C.accent, borderRadius: 6, padding: '6px 12px',
+                fontSize: 11, fontWeight: 700, cursor: 'pointer',
+                fontFamily: "'JetBrains Mono', monospace",
+                display: 'flex', alignItems: 'center', gap: 6,
+                whiteSpace: 'nowrap'
+              }}
+            >
+              <FileCode size={13} /> Select Script File
+            </button>
+          </div>
         </div>
 
       </div>
@@ -674,3 +846,4 @@ export default function Simulator() {
     </div>
   )
 }
+

@@ -50,7 +50,7 @@ def get_client():
 def generate_structured(
     prompt: str,
     schema: Type[T],
-    model: str = "gemini-3.6-flash",
+    model: str = "gemini-2.0-flash",
     temperature: float = 0.2,
 ) -> Optional[T]:
     """Call Gemini forcing JSON output matching `schema`. Returns None on any failure."""
@@ -78,24 +78,34 @@ def generate_structured(
 
 def generate_text(
     prompt: str,
-    model: str = "gemini-3.6-flash",
+    model: str = "gemini-3.5-flash",
     temperature: float = 0.4,
 ) -> Optional[str]:
-    """Call Gemini for a free-text response. Returns None on any failure."""
+    """Call Gemini for a free-text response with automatic fallback models. Returns None on any failure."""
     client = get_client()
     if client is None:
         return None
-    try:
-        from google.genai import types
-        response = client.models.generate_content(
-            model=model,
-            contents=prompt,
-            config=types.GenerateContentConfig(
-                temperature=temperature,
-                http_options=types.HttpOptions(timeout=10000)
+        
+    models_to_try = [model, "gemini-3.5-flash", "gemini-3.1-flash-lite", "gemini-3.6-flash"]
+    # De-duplicate preserving order
+    seen = set()
+    models_to_try = [m for m in models_to_try if not (m in seen or seen.add(m))]
+
+    from google.genai import types
+    for target_model in models_to_try:
+        try:
+            response = client.models.generate_content(
+                model=target_model,
+                contents=prompt,
+                config=types.GenerateContentConfig(
+                    temperature=temperature,
+                    http_options=types.HttpOptions(timeout=10000)
+                )
             )
-        )
-        return response.text
-    except Exception as e:
-        logger.error("Gemini text call failed: %s", e)
-        return None
+            if response.text:
+                return response.text
+        except Exception as e:
+            logger.warning(f"Gemini model {target_model} call failed ({e}). Trying next model...")
+
+    return None
+
