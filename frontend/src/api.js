@@ -1,8 +1,8 @@
 /* api.js — all fetch calls to the backend */
 
 // In dev, Vite proxies '/api' to the local backend (see vite.config.js).
-// In production, set VITE_API_URL to the deployed backend's origin.
-const BASE = (import.meta.env.VITE_API_URL || '') + '/api';
+// In production, fallback to deployed Render backend URL if VITE_API_URL is not explicitly set.
+const BASE = (import.meta.env.VITE_API_URL || (import.meta.env.PROD ? 'https://cybernova-backend-mbsu.onrender.com' : '')) + '/api';
 
 async function get(path) {
   const res = await fetch(BASE + path);
